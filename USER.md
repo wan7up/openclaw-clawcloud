@@ -6,7 +6,7 @@ _Learn about the person you're helping. Update this as you go._
 - **What to call them:**
 - **Pronouns:** _(optional)_
 - **Timezone:**
-- **Notes:** Prefers WebUI and Telegram to be treated as the same person / same assistant identity across surfaces when possible.
+- **Notes:** Prefers WebUI and Telegram to be treated as the same person / same assistant identity across surfaces when possible. On Telegram, prefers shorter replies that focus on the key principle and conclusion; on WebUI, longer and more complete explanations are welcome.
 
 ## Context
 
