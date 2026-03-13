@@ -6,3 +6,4 @@
 - 任务 002：电视直播列表自动化整理
 - 任务 003：多个 claw 互通记忆方案
 - 任务 004：御花苑 OpenClaw 部署
+- 任务 005：OpenClaw 多个 OpenAI Codex OAuth 账号的手动切换方案
