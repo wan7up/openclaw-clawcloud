@@ -1,0 +1,10 @@
+{
+  "users": {
+    "YOUR_FEISHU_OPEN_ID_OR_USER_ID": {
+      "enabled": true,
+      "alias": "你",
+      "sessionKey": "feishu:YOUR_FEISHU_OPEN_ID_OR_USER_ID",
+      "notes": "个人测试账号"
+    }
+  }
+}

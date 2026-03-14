@@ -1,0 +1,14 @@
+{
+  "name": "feishu-bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "fastify": "^5.0.0"
+  }
+}
