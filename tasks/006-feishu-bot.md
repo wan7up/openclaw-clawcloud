@@ -10,21 +10,21 @@
 4. bot 为不同用户保留各自记录/上下文
 
 ## 当前阶段
-先建一个普通飞书 Bot 供个人试用，确认飞书接入、事件订阅、user_id 获取、白名单与 alias/sessionKey 映射都正常。
+主线已切换为 **飞书官方插件路线**，不再以手工自建 webhook bot 作为当前主线。
 
 ## 已完成
-- 在工作区创建 `feishu-bot/` 项目骨架
-- 建立 `config/users.json` 用户白名单配置
-- 建立 Fastify webhook 服务
-- 支持飞书 `url_verification` challenge
-- 支持按发送者 ID 映射 alias / sessionKey
+- 识别到官方推荐安装方式是：`npx -y @larksuite/openclaw-lark-tools install`
+- 已确认用户通过飞书侧指令/流程完成安装，并已可直接使用
+- 已确认官方文档中的关键运维指令：`/feishu start`、`/feishu auth`
+- 已完成飞书用户授权，验证 `feishu_fetch_doc` 已可读取飞书云文档
+- 本地保留了 `feishu-bot/` 项目骨架，作为备用/实验方案，但当前不作为主线继续投入
+
+## 当前判断
+- 官方插件路线是当前正确主线
+- `feishu-bot/` 目录当前无运行进程、无端口占用，不构成冲突
+- 任务 006 后续应改为：基于官方飞书插件 + OpenClaw 配置/记忆/规则，实现白名单、多用户、不同称呼、不同记录
 
 ## 下一步
-1. 在飞书开放平台创建应用并开启 Bot
-2. 获取个人飞书 user_id/open_id
-3. 将你的 ID 填入 `config/users.json`
-4. 把 webhook 暴露为 HTTPS 地址
-5. 在飞书后台配置事件订阅
-6. 增加飞书回消息 API 调用
-7. 增加签名校验
-8. 再接 OpenClaw
+1. 在飞书里用 `/feishu start`、`/feishu auth`、实际消息/文档操作继续验证插件能力
+2. 评估官方插件能否直接承载任务 006 的白名单、多用户、用户称呼和独立记录需求
+3. 若官方插件能力足够，则在其基础上设计用户规则层；若不足，再回退使用 `feishu-bot/` 自建方案
