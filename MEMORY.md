@@ -28,6 +28,8 @@
 - **Tailscale WebUI 故障排查**: 如果通过 Tailscale Serve (HTTPS) 访问 WebUI 时遇到无法弹出申请、死循环提示 `pairing required` 的情况，核心原因是 `gateway.controlUi.allowInsecureAuth` 被错误地设为了 `true`，导致安全上下文冲突。必须在 `openclaw.json` 中删除 `allowInsecureAuth` 后门，并在 `allowedOrigins` 添加 Tailscale 域名。重启网关后，浏览器才能正常发起加密的设备配对请求，随后使用 `openclaw devices approve <id>` 即可放行。
 - User found my persistence on Task 008 amusing and slightly annoying. I need to chill out and not push tasks so aggressively when we are casually chatting or debugging other interesting system quirks.
 - Telegram 端的定时记忆同步提醒必须极简，只发 1–2 行，避免刷屏。
+- Docker 网络绑定经验：若想“禁止公网直连，但允许本机回环 + SSH 隧道访问”，容器内应用应监听 `0.0.0.0`，而 Docker 端口发布应绑定宿主机 `127.0.0.1:PORT:PORT`。不要把应用本身绑到容器内 `127.0.0.1`，否则宿主机和 SSH 隧道都会访问失败。
+- `cliproxyapi` 容器的 auth 凭据目录正确挂载点是 `/data/auths`；挂到 `/root/.cli-proxy-api` 会导致服务启动后显示 0 clients，并对推理请求返回 502。
 
 ## 🔴 血泪教训与红线规则 (2026-03-16 确立)
 1. **绝对禁止暴力重启**：修改配置后，**绝对禁止**使用底层 `openclaw gateway restart` 强杀进程。必须使用标准的 gateway API 且带上 note 优雅重启，否则会导致用户端死寂。
