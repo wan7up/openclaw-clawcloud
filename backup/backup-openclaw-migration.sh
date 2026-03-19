@@ -8,6 +8,8 @@ RCLONE_PATH="${RCLONE_PATH:-openclaw-migration}"
 UPLOAD_REMOTE="${UPLOAD_REMOTE:-1}"
 README_SOURCE="${README_SOURCE:-/root/.openclaw/workspace/backup/OPENCLAW_BACKUP_README.md}"
 README_TARGET="$OUTROOT/README.md"
+KEEP_LOCAL="${KEEP_LOCAL:-2}"
+KEEP_REMOTE="${KEEP_REMOTE:-2}"
 mkdir -p "$OUTROOT"
 ARCHIVE="$OUTROOT/openclaw-migration-$STAMP.tar.gz"
 MANIFEST="$OUTROOT/openclaw-migration-$STAMP.sha256"
@@ -59,11 +61,23 @@ if [ "$UPLOAD_REMOTE" = "1" ]; then
   if [ -f "$README_TARGET" ]; then
     rclone copyto "$README_TARGET" "$REMOTE_DIR/README.md"
   fi
+
+  if [ "$KEEP_REMOTE" -ge 0 ]; then
+    old_remote_tars="$(rclone lsf "$REMOTE_DIR" | grep '^openclaw-migration-.*\.tar\.gz$' | sort -r | awk -v keep="$KEEP_REMOTE" 'NR>keep')"
+    if [ -n "$old_remote_tars" ]; then
+      while IFS= read -r old_tar; do
+        [ -z "$old_tar" ] && continue
+        old_sha="${old_tar%.tar.gz}.sha256"
+        rclone deletefile "$REMOTE_DIR/$old_tar" || true
+        rclone deletefile "$REMOTE_DIR/$old_sha" || true
+      done <<< "$old_remote_tars"
+    fi
+  fi
 fi
 
-# Keep only the most recent 2 backups
-ls -1dt "$OUTROOT"/openclaw-migration-*.tar.gz 2>/dev/null | awk 'NR>2' | xargs -r rm -f
-ls -1dt "$OUTROOT"/openclaw-migration-*.sha256 2>/dev/null | awk 'NR>2' | xargs -r rm -f
+# Keep only the most recent local backups
+ls -1dt "$OUTROOT"/openclaw-migration-*.tar.gz 2>/dev/null | awk -v keep="$KEEP_LOCAL" 'NR>keep' | xargs -r rm -f
+ls -1dt "$OUTROOT"/openclaw-migration-*.sha256 2>/dev/null | awk -v keep="$KEEP_LOCAL" 'NR>keep' | xargs -r rm -f
 
 echo "Archive : $ARCHIVE"
 echo "SHA256  : $MANIFEST"
