@@ -6,6 +6,8 @@ OUTROOT="${BACKUP_ROOT:-$HOME/backups/openclaw-migration}"
 RCLONE_REMOTE="${RCLONE_REMOTE:-ocbackup:}"
 RCLONE_PATH="${RCLONE_PATH:-openclaw-migration}"
 UPLOAD_REMOTE="${UPLOAD_REMOTE:-1}"
+README_SOURCE="${README_SOURCE:-/root/.openclaw/workspace/backup/OPENCLAW_BACKUP_README.md}"
+README_TARGET="$OUTROOT/README.md"
 mkdir -p "$OUTROOT"
 ARCHIVE="$OUTROOT/openclaw-migration-$STAMP.tar.gz"
 MANIFEST="$OUTROOT/openclaw-migration-$STAMP.sha256"
@@ -45,11 +47,18 @@ tar czf "$ARCHIVE" \
 
 sha256sum "$ARCHIVE" > "$MANIFEST"
 
+if [ -f "$README_SOURCE" ]; then
+  cp "$README_SOURCE" "$README_TARGET"
+fi
+
 if [ "$UPLOAD_REMOTE" = "1" ]; then
   REMOTE_DIR="${RCLONE_REMOTE%/}/${RCLONE_PATH#/}"
   rclone mkdir "$REMOTE_DIR"
   rclone copyto "$ARCHIVE" "$REMOTE_DIR/$(basename "$ARCHIVE")"
   rclone copyto "$MANIFEST" "$REMOTE_DIR/$(basename "$MANIFEST")"
+  if [ -f "$README_TARGET" ]; then
+    rclone copyto "$README_TARGET" "$REMOTE_DIR/README.md"
+  fi
 fi
 
 # Keep only the most recent 2 backups
