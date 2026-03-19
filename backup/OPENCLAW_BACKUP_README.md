@@ -55,6 +55,26 @@ rclone lsf ocbackup:openclaw-migration/
 
 ## 新服务器恢复流程
 
+### 推荐：直接使用恢复脚本
+
+#### 仅下载并校验远端最新备份
+```bash
+bash /root/.openclaw/workspace/backup/restore-openclaw-migration.sh --from-remote --check-only
+```
+
+#### 从远端最新备份直接恢复
+```bash
+bash /root/.openclaw/workspace/backup/restore-openclaw-migration.sh --from-remote --yes
+```
+
+#### 从本地文件恢复
+```bash
+bash /root/.openclaw/workspace/backup/restore-openclaw-migration.sh \
+  --archive /root/restore/openclaw-migration/openclaw-migration-YYYY-MM-DD-HHMMSS.tar.gz \
+  --sha256 /root/restore/openclaw-migration/openclaw-migration-YYYY-MM-DD-HHMMSS.sha256 \
+  --yes
+```
+
 ## 步骤 1：准备基础环境
 在新服务器上先安装：
 - OpenClaw
