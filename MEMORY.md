@@ -11,6 +11,7 @@
 - Official OAuth models show `.anthropic` suffix in WebUI (3.13 hardcoded change).
 - `config.patch` merges arrays by position, NOT replaces them. Use `config.apply` for full array overwrites.
 - Main agent uses OAuth (`gpt-5.4`) as primary, with 7 fallbacks all under `openai-codex/` prefix. Fallback order: gemini-3.1-pro-preview → gemini-3-pro-preview → claude-sonnet-4-6 → gpt-5.2-codex → gemini-3-pro-high → gpt-5.2 → gemini-3-flash-preview.
+- When the user is about to share sensitive info (passwords, secrets), proactively remind them which API/provider is currently in use; default self-hosted relay is considered safe, but third-party APIs used for cost-saving should not handle sensitive info.
 - agentb / agentc use lightweight models only: `openai-codex/gemini-3-flash` + `openai-codex/gpt-5.1-codex-mini`.
 - Weekly cron job (`sync-api-models-weekly`) intelligently curates Top 10-15 models from the user's API.
 - User is a geek/tinkerer: for topics of interest, wants deep fundamental explanations; for everything else, wants fast direct results.
@@ -30,6 +31,8 @@
 - Telegram 端的定时记忆同步提醒必须极简，只发 1–2 行，避免刷屏。
 - Docker 网络绑定经验：若想“禁止公网直连，但允许本机回环 + SSH 隧道访问”，容器内应用应监听 `0.0.0.0`，而 Docker 端口发布应绑定宿主机 `127.0.0.1:PORT:PORT`。不要把应用本身绑到容器内 `127.0.0.1`，否则宿主机和 SSH 隧道都会访问失败。
 - `cliproxyapi` 容器的 auth 凭据目录正确挂载点是 `/data/auths`；挂到 `/root/.cli-proxy-api` 会导致服务启动后显示 0 clients，并对推理请求返回 502。
+- QMD / memory_search 排障经验：若 `memory_search` 报 OpenAI embeddings 401，而聊天模型本身正常，优先怀疑记忆检索仍在独立走 OpenAI embeddings provider，而不是复用聊天模型的 openai-compatible baseUrl。修复时要分层检查 provider/key/baseUrl、collection 命名是否一致（如 `memory-root-main` vs `memory-root`）、`node-llama-cpp` 是否真的装入 OpenClaw 运行时，以及机器内存/CPU 是否足以承载本地 query。
+- Telegram 群聊排障经验：账号级 `groupPolicy` 打开不代表群聊就能用；若顶层 `channels.telegram.groupPolicy` 仍拦截，群消息会在上层被静默丢弃。改 `openclaw.json` 后若未 `config.apply`，运行态不会生效。
 
 ## 🔴 血泪教训与红线规则 (2026-03-16 确立)
 1. **绝对禁止暴力重启**：修改配置后，**绝对禁止**使用底层 `openclaw gateway restart` 强杀进程。必须使用标准的 gateway API 且带上 note 优雅重启，否则会导致用户端死寂。
