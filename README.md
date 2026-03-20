@@ -33,6 +33,65 @@ This repository provides a practical adaptation of **OpenClaw** for **ClawCloud 
 3. 正确填写 `OPENCLAW_ALLOWED_ORIGIN`
 4. 通过 ENV 提供你自己的 API 参数（如 `OPENAI_API_KEY` / `OPENAI_BASE_URL`）
 
+## ClawCloud Run 部署步骤（Create App）
+
+下面这套可以直接对应到 **ClawCloud Run → Create App** 页面：
+
+### 1. Image Name
+填写你要部署的镜像，例如：
+
+```text
+ghcr.io/wan7up/openclaw-clawcloud:v0.1.8
+```
+
+如果你 fork 或自己重新发布，请改成你自己的 GHCR 地址，例如：
+
+```text
+ghcr.io/<yourname>/openclaw-clawcloud:v0.1.8
+```
+
+### 2. Port
+填写：
+
+```text
+8080
+```
+
+### 3. Local Storage
+添加一个可写的 **Local Storage**，挂载路径填写：
+
+```text
+/data
+```
+
+### 4. Environment Variables
+至少建议填写这些：
+
+```env
+OPENCLAW_GATEWAY_TOKEN=replace-me
+OPENCLAW_ALLOWED_ORIGIN=https://your-app.us-west-1.clawcloudrun.com
+OPENCLAW_STATE_DIR=/data/.openclaw
+OPENCLAW_WORKSPACE_DIR=/data/workspace
+OPENCLAW_GATEWAY_PORT=18789
+PORT=8080
+```
+
+如果你使用 OpenAI 或 OpenAI-compatible：
+
+```env
+OPENAI_API_KEY=replace-me
+OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
+OPENAI_MODEL=gpt-5.1-codex-mini
+```
+
+### 5. 部署完成后验证
+部署完成后建议立刻做这几步：
+
+1. 打开 ClawCloud Run 分配给你的公网地址
+2. 确认 WebUI 可以正常打开
+3. 发一句简单消息，确认聊天可用
+4. 如果你用了持久化存储，重部署后再确认记录是否还在
+
 ### `OPENCLAW_ALLOWED_ORIGIN` 很重要
 这个值必须填写为 **ClawCloud Run 分配给你的实际公网域名 origin**，例如：
 
