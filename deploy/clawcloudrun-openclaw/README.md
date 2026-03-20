@@ -197,6 +197,47 @@ then treat this as a **display-layer issue** unless proven otherwise.
 
 ---
 
+## Pairing fallback (terminal workaround)
+
+**Normal goal:** a correct deployment should not require terminal-based manual pairing.
+
+In practice, early validation (for example around the `v0.1.3` stage) showed that some ClawCloud Run sessions could still get unstuck only after a one-time manual approval in the container terminal.
+
+So if WebUI pairing appears stuck, use this as a **fallback workaround**, not the normal expected flow.
+
+### Step 1: refresh WebUI to generate a fresh pending request
+Refresh the WebUI once, then immediately run:
+
+```bash
+cat /data/.openclaw/devices/pending.json
+```
+
+This should show a new `requestId`.
+
+### Step 2: approve that specific requestId manually
+Replace `NEW_ID` below with the actual request ID you just saw:
+
+```bash
+node --input-type=module -e "import('/app/dist/plugin-sdk/device-pair.js').then(async m => { const r = await m.approveDevicePairing('NEW_ID','/data/.openclaw'); console.log(JSON.stringify(r,null,2)); }).catch(err => { console.error(err); process.exit(1); })"
+```
+
+### Step 3: confirm it moved into `paired.json`
+
+```bash
+cat /data/.openclaw/devices/paired.json
+```
+
+If approval succeeded, `paired.json` should no longer be empty.
+
+### Important note
+If you repeatedly need this workaround on fresh deployments, first re-check:
+
+- `OPENCLAW_ALLOWED_ORIGIN`
+- whether it exactly matches the real ClawCloud Run public origin
+- whether you are using the same persisted `/data` mount or carrying over old state
+
+---
+
 ## Files in this directory
 
 - `Dockerfile` — image definition
