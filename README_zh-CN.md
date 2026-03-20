@@ -2,9 +2,11 @@
 
 [English](./README.md) | [简体中文](./README_zh-CN.md)
 
-有在用 ClawCloud Run 的朋友，可能都发现了：直接部署 OpenClaw，经常会踩到各种坑。为了让龙虾能在 ClawCloud Run 上顺利跑起来，我专门整理了这个适配版本。
+这是一个面向 **ClawCloud Run** 的、基于官方 OpenClaw 镜像整理出来的**最小实用适配版**。
 
-This repository provides a practical adaptation of **OpenClaw** for **ClawCloud Run**, focused on solving the deployment issues people commonly hit in this environment.
+它的目标很明确：解决 OpenClaw 在 ClawCloud Run 上真实会遇到的那几类问题，而不是重做一套 OpenClaw。
+
+---
 
 ## 这个仓库解决什么问题
 
@@ -46,11 +48,7 @@ This repository provides a practical adaptation of **OpenClaw** for **ClawCloud 
 ghcr.io/wan7up/openclaw-clawcloud:v0.1.8
 ```
 
-如果你 fork 或自己重新发布，请改成你自己的 GHCR 地址，例如：
-
-```text
-ghcr.io/<yourname>/openclaw-clawcloud:v0.1.8
-```
+如果你 fork 或自己重新发布，请改成你自己的 GHCR 地址。
 
 ### 2. Port
 填写：
@@ -78,7 +76,7 @@ OPENCLAW_GATEWAY_PORT=18789
 PORT=8080
 ```
 
-如果你使用 OpenAI 或 OpenAI-compatible：
+如果你使用 OpenAI 或 OpenAI-compatible API，再补：
 
 ```env
 OPENAI_API_KEY=replace-me
@@ -86,41 +84,6 @@ OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
 OPENAI_MODEL=gpt-5.1-codex-mini
 ```
 
-### 5. 部署完成后验证
-部署完成后建议立刻做这几步：
-
-1. 打开 ClawCloud Run 分配给你的公网地址
-2. 确认 WebUI 可以正常打开
-3. 发一句简单消息，确认聊天可用
-4. 如果你用了持久化存储，重部署后再确认记录是否还在
-
-### `OPENCLAW_ALLOWED_ORIGIN` 很重要
-这个值必须填写为 **ClawCloud Run 分配给你的实际公网域名 origin**，例如：
-
-```text
-https://your-app.us-west-1.clawcloudrun.com
-```
-
-不要填：
-- `127.0.0.1`
-- 容器内部地址
-- 带路径的 URL
-
-## 文档
-
-详细部署说明请看：
-
-- [deploy/clawcloudrun-openclaw/README.md](deploy/clawcloudrun-openclaw/README.md)
-- [deploy/clawcloudrun-openclaw/.env.example](deploy/clawcloudrun-openclaw/.env.example)
-- [deploy/clawcloudrun-openclaw/RELEASE_NOTES_zh-CN.md](deploy/clawcloudrun-openclaw/RELEASE_NOTES_zh-CN.md)
-
 ## 说明
 
-这个仓库的目标是做一个**适合 ClawCloud Run 场景的最小适配版**，而不是重写 OpenClaw 本体。
-
-因此，这里的改动会尽量保持克制：
-- 优先解决部署问题
-- 优先保证 WebUI / chat / 持久化可用
-- 避免把用户自己的 API 默认值硬编码进镜像
-
-如果你只是想快速部署并跑起来，这个仓库就是为这个目的准备的。
+更详细的中文说明可直接阅读本文件；英文读者请回到 `README.md`。
