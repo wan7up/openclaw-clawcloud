@@ -6,8 +6,6 @@
 
 它的目标很明确：解决 OpenClaw 在 ClawCloud Run 上真实会遇到的那几类问题，而不是重做一套 OpenClaw。
 
----
-
 ## 这个仓库解决什么问题
 
 相比直接使用官方镜像，这个适配版主要处理了以下几个现实问题：
@@ -48,7 +46,11 @@
 ghcr.io/wan7up/openclaw-clawcloud:v0.1.8
 ```
 
-如果你 fork 或自己重新发布，请改成你自己的 GHCR 地址。
+如果你 fork 或自己重新发布，请改成你自己的 GHCR 地址，例如：
+
+```text
+ghcr.io/<yourname>/openclaw-clawcloud:v0.1.8
+```
 
 ### 2. Port
 填写：
@@ -76,7 +78,7 @@ OPENCLAW_GATEWAY_PORT=18789
 PORT=8080
 ```
 
-如果你使用 OpenAI 或 OpenAI-compatible API，再补：
+如果你使用 OpenAI 或 OpenAI-compatible：
 
 ```env
 OPENAI_API_KEY=replace-me
@@ -84,6 +86,70 @@ OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
 OPENAI_MODEL=gpt-5.1-codex-mini
 ```
 
-## 说明
+## 关于 `OPENCLAW_ALLOWED_ORIGIN`
 
-更详细的中文说明可直接阅读本文件；英文读者请回到 `README.md`。
+这个变量非常关键，也最容易填错。
+
+它必须填写成 **ClawCloud Run 实际分配给你的公网 origin**，例如：
+
+```text
+https://your-app.us-west-1.clawcloudrun.com
+```
+
+不要填写：
+- `127.0.0.1`
+- 容器内部地址
+- 随便猜的域名
+- 带 path 的完整 URL
+
+## 首次部署后建议检查
+
+1. WebUI 能否打开
+2. 能否发送一条简单消息
+3. `/data/.openclaw/openclaw.json` 是否按 ENV 正确生成
+4. 复用同一个 `/data` 挂载重新部署后，状态是否仍在
+
+## 已知但不一定阻塞的问题
+
+### `openclaw doctor --fix` 可能会报：
+- `pairing required`
+- `Gateway not running`
+- `systemd not installed`
+
+在 ClawCloud Run 里，这些有时只是噪音，并不一定代表部署失败。
+
+如果：
+- WebUI 能打开
+- chat 能用
+- 状态能持久化
+
+那这些 doctor 报错通常不是阻塞问题。
+
+## Pairing fallback（终端应急方案）
+
+正常目标是不依赖终端手工配对，但在某些早期验证阶段，如果 WebUI pairing 卡住，可以把下面步骤当 fallback：
+
+1. 刷新 WebUI 一次
+2. 在终端运行：
+
+```bash
+cat /data/.openclaw/devices/pending.json
+```
+
+3. 取出新的 `requestId`，执行：
+
+```bash
+node --input-type=module -e "import('/app/dist/plugin-sdk/device-pair.js').then(async m => { const r = await m.approveDevicePairing('NEW_ID','/data/.openclaw'); console.log(JSON.stringify(r,null,2)); }).catch(err => { console.error(err); process.exit(1); })"
+```
+
+4. 再检查：
+
+```bash
+cat /data/.openclaw/devices/paired.json
+```
+
+## 项目定位
+
+这个适配版不是为了把 OpenClaw 改得面目全非，而是：
+
+> 用尽量小的一层适配，把官方 OpenClaw 稳定带到 ClawCloud Run 上。
