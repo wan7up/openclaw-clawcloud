@@ -28,6 +28,7 @@ ghcr.io/<yourname>/openclaw-clawcloud:v0.1
 - **`v0.1.3` = 第一版成功基线**
 - 已验证：WebUI 可打开、webchat 可连接、对话可用
 - `v0.1.4` / `v0.1.5` 为后续失败实验版，曾引入回归；文档中不再把它们视为候选基线
+- **`v0.1.8` = 当前公开候选发布版**：已整理为面向 GitHub/其他用户复用的 env-driven 版本；仓库首页 README、`.env.example`、中文发布说明、GitHub Release 均已补齐
 
 ---
 
