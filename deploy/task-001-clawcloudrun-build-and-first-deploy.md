@@ -24,6 +24,11 @@ ghcr.io/<yourname>/openclaw-clawcloud:latest
 ghcr.io/<yourname>/openclaw-clawcloud:v0.1
 ```
 
+### 当前状态结论（2026-03-20）
+- **`v0.1.3` = 第一版成功基线**
+- 已验证：WebUI 可打开、webchat 可连接、对话可用
+- `v0.1.4` / `v0.1.5` 为后续失败实验版，曾引入回归；文档中不再把它们视为候选基线
+
 ---
 
 ## 2. 推荐镜像仓库
@@ -139,6 +144,8 @@ deploy/task-001-clawcloudrun-create-app-form-v1.md
 - 日志里是否有 `EACCES`
 - `/healthz`
 - UI 是否打开
+- **当前已验证成功基线：`v0.1.3`**。该版本已实测通过：WebUI 可打开、webchat 可连、对话可用。后续实验标签 `v0.1.4` / `v0.1.5` 曾引入回归，不应作为基线参考。
+- 如果使用 OpenAI-compatible 中转（`OPENAI_BASE_URL`），不要先凭猜测修改 provider 结构；应先检查 `v0.1.3` 实际生成的 `/data/.openclaw/openclaw.json`，确认当前到底是通过哪条配置路径在工作，再决定是否需要最小增量优化。
 
 ---
 
@@ -177,10 +184,12 @@ deploy/task-001-clawcloudrun-create-app-form-v1.md
 - 外部端口是不是 8080
 - nginx 配置是否生效
 - `/healthz` 是否正常
+- **先回到已验证成功基线 `v0.1.3` 做对照**。如果 `v0.1.3` 正常，而新版本异常，则默认视为新补丁引入回归，不要继续猜环境问题。
 
 ### 情况 D：UI 打开但 Control UI 连不上
 这时再进入下一阶段：
 - 继续调 Control UI / origin / device auth 的兼容项
+- 但要先保留一条纪律：**不要在没有对照 `v0.1.3` 实际配置落盘结果之前，随意重写 provider / Control UI 相关结构**
 
 ---
 
