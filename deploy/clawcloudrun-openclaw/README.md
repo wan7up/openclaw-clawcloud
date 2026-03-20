@@ -1,76 +1,249 @@
-# ClawCloud Run OpenClaw（最小适配版原型）
+# OpenClaw for ClawCloud Run
 
-## 目标
-这是一个基于官方 OpenClaw 镜像思路的 **ClawCloud Run 最小适配版原型**，目标是先解决：
+A minimal, practical adaptation of the official OpenClaw image for **ClawCloud Run**.
 
-1. `/home/node/.openclaw` 权限问题
-2. 缺少 SSH 导致的首次配置困难
-3. 托管平台对 HTTP / WebSocket / 健康检查的要求
+This prototype exists to solve the real problems that show up on ClawCloud Run:
 
-## 当前原型边界
-本目录当前只追求 MVP：
-- 状态目录改走 `/data/.openclaw`
-- workspace 改走 `/data/workspace`
-- 通过 env + `configure.cjs` 自动生成最小配置
-- 使用 nginx 监听外部 `8080` 并反代到内部 gateway `18789`
+- writable state should live on mounted storage, not under the image user's home
+- first-run setup should work without SSH-heavy manual steps
+- the platform needs a normal HTTP entrypoint on `8080`
+- WebUI + WebSocket traffic must be proxied correctly
 
-## 当前已验证基线
-- **`v0.1.3` 是目前第一版成功基线**
-- 已实测通过：WebUI 可打开、webchat 可连接、对话可用
-- 后续实验标签 **`v0.1.4` / `v0.1.5` 曾引入回归**，目前应视为失败实验版，不应作为部署基线参考
+---
 
-## 当前设计原则
-- 优先保住 `v0.1.3` 已验证通过的启动链路
-- 不为了“看起来更完整”而随意重写模型 provider 结构
-- 后续若要优化自定义 API / provider 配置，必须先审计 `v0.1.3` 实际生成的 `openclaw.json`，再做最小增量修改
-- **不要在镜像里为用户应自行提供的 ENV 值写死默认值**（例如 `OPENAI_BASE_URL`、各类 provider key）。如果未来要公开发布到 GitHub 给其他用户复用，镜像应保持通用，环境相关值应完全由部署端注入。
+## What this image changes
 
-## 目录文件
-- `Dockerfile`：原型镜像定义
-- `entrypoint.sh`：启动流程
-- `configure.cjs`：env -> openclaw.json 的最小生成器
-- `nginx.conf.template`：最小反代模板
+Compared with the upstream `ghcr.io/openclaw/openclaw` image, this adaptation intentionally does only a small set of things:
 
-## 当前假设
-- ClawCloud Run 提供一个可写的 Local Storage 挂载到 `/data`
-- 可以通过文件管理直接查看或修改 `/data/.openclaw/openclaw.json`
-- 可以通过 Terminal 做有限命令检查，但不依赖它
+- stores OpenClaw state under `/data/.openclaw`
+- stores workspace data under `/data/workspace`
+- generates a minimal `openclaw.json` from environment variables on startup
+- runs `nginx` as the external HTTP/WebSocket entrypoint on port `8080`
+- proxies requests to the internal OpenClaw gateway on `127.0.0.1:18789`
 
-## 推荐部署参数（ClawCloud Run）
-- Image: 你的自定义镜像（例如 `ghcr.io/<yourname>/openclaw-clawcloud:<tag>`）
-- Port: `8080`
-- Local Storage Mount Path: `/data`
-- 关键 env:
-  - `OPENCLAW_GATEWAY_TOKEN`（必填）
-  - `OPENCLAW_ALLOWED_ORIGIN=https://<your-app>.clawcloudrun.com`（必填）
-  - `OPENAI_API_KEY`（使用 OpenAI / OpenAI-compatible 时必填）
-  - `OPENAI_BASE_URL`（仅当使用 OpenAI-compatible / 中转时填写）
-  - `OPENAI_MODEL`（可选；若填写，则默认主模型与 provider 模型列表都会收敛到这个模型）
-  - `OPENCLAW_STATE_DIR=/data/.openclaw`
-  - `OPENCLAW_WORKSPACE_DIR=/data/workspace`
-  - `OPENCLAW_GATEWAY_PORT=18789`
-  - `PORT=8080`
+The goal is **not** to redesign OpenClaw. The goal is to make it deploy cleanly on ClawCloud Run.
 
-## 首次部署后最小验证
-1. 打开 WebUI
-2. 发一句简单消息，确认对话可用
-3. 如果使用 OpenAI-compatible：检查 `/data/.openclaw/openclaw.json` 中是否写入了 `env.OPENAI_BASE_URL`
-4. 重新部署同一个 App（保留同一个 `/data` 挂载），确认记录与状态仍保留
+---
 
-## 已知现象（当前不阻塞）
-- 在容器内运行 `openclaw doctor --fix` 时，可能看到：
-  - `pairing required`
-  - `Gateway not running`
-  - `systemd not installed`
-- 这些在 ClawCloud Run 容器场景下可能只是自检噪音；如果 WebUI、聊天和持久化都正常，通常不构成发布阻塞
-- WebUI 中模型/provider badge 可能显示为 `azure` 等上游分类标签；若实际对话正常、模型自报正确，可暂视为展示层问题
+## Current status
 
-## 注意
-这一版虽然仍是原型，但 `v0.1.3` 已经证明这条适配路线是可行的；后续工作重点不是推翻重来，而是**基于成功基线做保守收敛**。
+### Verified baseline
+- `v0.1.3` was the first confirmed working baseline
+- later experiments `v0.1.4` and `v0.1.5` introduced regressions and should not be treated as stable references
+- `v0.1.8` is the current **public, env-driven candidate** intended for general reuse
 
-当前明确结论：
-- `configure.cjs` 是必要修复（官方镜像为 ESM 环境，不能继续用 CommonJS 风格的 `configure.js`）
-- 启动路径应基于官方镜像的真实工作目录 `/app`，而不是错误的 `/opt/openclaw/app`
-- nginx 反代层在 ClawCloud Run 场景下仍然有必要
+### Verified working behavior
+Current testing confirms:
 
-Control UI / provider / 自定义 API URL 相关优化，后续必须先做现状审计，再做最小变更，避免再次引入像 `v0.1.4` / `v0.1.5` 那样的回归。
+- WebUI opens correctly
+- webchat connects correctly
+- chat works
+- state persists when the same `/data` volume is reused
+
+---
+
+## Important design rule
+
+This image is meant to be reusable by other users.
+
+So:
+
+> **Do not hardcode deployment-specific API URLs, keys, or user-specific defaults into the image.**
+
+Anything user-specific should be injected through environment variables at deploy time.
+
+---
+
+## Required ClawCloud Run setup
+
+### 1) Image
+Use your published image, for example:
+
+```text
+ghcr.io/<yourname>/openclaw-clawcloud:v0.1.8
+```
+
+### 2) Port
+Set the service port to:
+
+```text
+8080
+```
+
+### 3) Persistent storage
+Mount a writable **Local Storage** volume to:
+
+```text
+/data
+```
+
+This is critical.
+
+OpenClaw state and workspace are stored at:
+
+- `/data/.openclaw`
+- `/data/workspace`
+
+If you redeploy the same app **with the same mounted `/data` volume**, records and state should remain available.
+
+---
+
+## Environment variables
+
+## Required
+
+| Variable | Required | Description |
+|---|---:|---|
+| `OPENCLAW_GATEWAY_TOKEN` | Yes | Gateway token used by the WebUI / clients |
+| `OPENCLAW_ALLOWED_ORIGIN` | Yes | **Must be the ClawCloud Run public app URL origin**, e.g. `https://your-app.us-west-1.clawcloudrun.com` |
+| `OPENCLAW_STATE_DIR` | Recommended | Set to `/data/.openclaw` |
+| `OPENCLAW_WORKSPACE_DIR` | Recommended | Set to `/data/workspace` |
+| `OPENCLAW_GATEWAY_PORT` | Recommended | Set to `18789` |
+| `PORT` | Recommended | Set to `8080` |
+
+### If using OpenAI / OpenAI-compatible APIs
+
+| Variable | Required | Description |
+|---|---:|---|
+| `OPENAI_API_KEY` | Yes | Your OpenAI or OpenAI-compatible API key |
+| `OPENAI_BASE_URL` | Optional | Needed for OpenAI-compatible / relay / proxy endpoints |
+| `OPENAI_MODEL` | Optional | If set, the startup config will set the primary model to `openai/<OPENAI_MODEL>` and shrink the provider model list to that single model |
+
+### Example
+
+```env
+OPENCLAW_GATEWAY_TOKEN=replace-me
+OPENCLAW_ALLOWED_ORIGIN=https://your-app.us-west-1.clawcloudrun.com
+OPENCLAW_STATE_DIR=/data/.openclaw
+OPENCLAW_WORKSPACE_DIR=/data/workspace
+OPENCLAW_GATEWAY_PORT=18789
+PORT=8080
+
+OPENAI_API_KEY=replace-me
+OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
+OPENAI_MODEL=gpt-5.1-codex-mini
+```
+
+---
+
+## Important note about `OPENCLAW_ALLOWED_ORIGIN`
+
+This variable is easy to miss, and it matters.
+
+Set it to the **actual public origin assigned by ClawCloud Run**.
+
+Example:
+
+```text
+https://stvxaykoiull.us-west-1.clawcloudrun.com
+```
+
+Do **not** put:
+- `127.0.0.1`
+- container-internal addresses
+- random guessed domains
+- a full path like `/chat`
+
+It must be the **origin only**:
+- scheme
+- host
+- optional port
+
+No extra path.
+
+---
+
+## First deployment checklist
+
+After deployment, verify these in order:
+
+1. Open the WebUI
+2. Send one simple test message
+3. If using OpenAI-compatible APIs, inspect `/data/.openclaw/openclaw.json` and confirm your env values were written as expected
+4. Redeploy the same app while keeping the same `/data` mount, then confirm state still exists
+
+---
+
+## Known non-blocking behavior
+
+These may appear in container-based environments and are **not necessarily deployment failures**:
+
+### `openclaw doctor --fix` may report:
+- `pairing required`
+- `Gateway not running`
+- `systemd not installed`
+
+In ClawCloud Run, this can be normal noise because:
+- the gateway is already running in the container foreground model
+- systemd is not expected inside the container
+- CLI self-checks may not have the scopes they expect
+
+If these are true:
+- WebUI opens
+- chat works
+- state persists
+
+then those doctor messages are usually **not blocking**.
+
+### Provider badge may show unexpected labels
+The WebUI model/provider badge may sometimes show labels like `azure` even when the actual runtime behavior is acceptable.
+
+If:
+- the selected model is correct
+- the self-reported model is correct
+- chat works
+
+then treat this as a **display-layer issue** unless proven otherwise.
+
+---
+
+## Files in this directory
+
+- `Dockerfile` — image definition
+- `entrypoint.sh` — startup flow
+- `configure.cjs` — env → `openclaw.json` minimal generator
+- `nginx.conf.template` — reverse proxy config
+
+---
+
+## Why `configure.cjs` instead of `configure.js`
+
+The upstream image runs in an ESM environment under `/app`.
+
+So this adaptation uses:
+
+- `configure.cjs`
+- `/app/...`
+
+instead of older incorrect assumptions like:
+
+- `configure.js`
+- `/opt/openclaw/app`
+
+This is intentional and required for compatibility with the upstream image layout.
+
+---
+
+## Publishing guidance
+
+If you publish this image or repo for other users:
+
+- keep deployment-specific values out of the image
+- document env variables clearly
+- treat `/data` mounting as mandatory
+- keep the adaptation minimal
+- prefer stability over clever provider rewrites
+
+---
+
+## Summary
+
+If you want a version of OpenClaw that can be deployed on ClawCloud Run and reused by others, the key pieces are:
+
+- `/data` persistent storage
+- correct `OPENCLAW_ALLOWED_ORIGIN`
+- port `8080`
+- minimal startup config generation
+- no hardcoded user-specific API defaults
+
+That is the whole point of this adaptation.
