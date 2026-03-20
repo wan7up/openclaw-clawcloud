@@ -33,6 +33,8 @@
 - `cliproxyapi` 容器的 auth 凭据目录正确挂载点是 `/data/auths`；挂到 `/root/.cli-proxy-api` 会导致服务启动后显示 0 clients，并对推理请求返回 502。
 - QMD / memory_search 排障经验：若 `memory_search` 报 OpenAI embeddings 401，而聊天模型本身正常，优先怀疑记忆检索仍在独立走 OpenAI embeddings provider，而不是复用聊天模型的 openai-compatible baseUrl。修复时要分层检查 provider/key/baseUrl、collection 命名是否一致（如 `memory-root-main` vs `memory-root`）、`node-llama-cpp` 是否真的装入 OpenClaw 运行时，以及机器内存/CPU 是否足以承载本地 query。
 - Telegram 群聊排障经验：账号级 `groupPolicy` 打开不代表群聊就能用；若顶层 `channels.telegram.groupPolicy` 仍拦截，群消息会在上层被静默丢弃。改 `openclaw.json` 后若未 `config.apply`，运行态不会生效。
+- 关于“失忆/续线断片”的新规则（2026-03-20）：跨夜、长间隔、被定时任务/自动提醒插队的项目，**绝不能依赖聊天窗口短期上下文**。必须在暂停前用“收尾”做结构化交接，至少写清：当前主题、已确认事实、当前版本号、当前卡点、下一步动作、由谁执行。否则第二天极易只剩零碎记忆，导致判断漂移和错误续线。
+- 这次 ClawCloud Run 任务的教训：如果用户明确贴出了“我之前说过的原话/记录”，应把该记录视为最高优先级现场事实；不要先拿较旧的摘要记忆去覆盖它，更不能在版本号、当前阶段、执行人（我来做 vs 用户来做）上乱补。先对齐记录，再行动。
 
 ## 🔴 血泪教训与红线规则 (2026-03-16 确立)
 1. **绝对禁止暴力重启**：修改配置后，**绝对禁止**使用底层 `openclaw gateway restart` 强杀进程。必须使用标准的 gateway API 且带上 note 优雅重启，否则会导致用户端死寂。
