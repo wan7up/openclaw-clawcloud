@@ -2,7 +2,7 @@
 
 ## Pending Tasks
 
-- 任务 001：clawcloudrun 的 OpenClaw 部署实施【进行中：设计稿、实施计划、最小适配版原型、Create App 表单说明、镜像构建与首次部署流程文档已完成；下一步是 build/push 镜像并做第一次实测】
+- 任务 001：ClawCloud Run 的 OpenClaw 部署实施【已进入首轮收尾/候选发布状态：`v0.1.8` 已作为公开 env-driven 候选版发布；镜像构建、推送、部署验证、README、`.env.example`、中文发布说明、GitHub Release 与仓库主页更新均已完成。后续以真实使用反馈驱动为主，不再做投机式重构】
 - 任务 002：电视直播列表自动化整理
 - 任务 003：多个 claw 互通记忆方案
 - 任务 004：御花苑 OpenClaw 部署（补充：评估是否可用 1 核 1G 设备部署轻量 OpenClaw，因处理问题不多）
