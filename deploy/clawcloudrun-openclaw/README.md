@@ -1,6 +1,6 @@
 # OpenClaw for ClawCloud Run
 
-有在用 ClawCloud Run 的朋友，可能都发现了：直接部署 OpenClaw，经常会踩到各种坑。为了让龙虾能在 ClawCloud Run 上顺利跑起来，我专门整理了这个适配版本。
+[English](./README.md) | [简体中文](./README_zh-CN.md)
 
 A minimal, practical adaptation of the official OpenClaw image for **ClawCloud Run**.
 
