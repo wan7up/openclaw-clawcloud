@@ -135,7 +135,7 @@ Set it to the **actual public origin assigned by ClawCloud Run**.
 Example:
 
 ```text
-https://stvxaykoiull.us-west-1.clawcloudrun.com
+https://your-app.us-west-1.clawcloudrun.com
 ```
 
 Do **not** put:
