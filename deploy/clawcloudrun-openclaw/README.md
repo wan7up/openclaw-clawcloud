@@ -36,17 +36,34 @@
 - 可以通过文件管理直接查看或修改 `/data/.openclaw/openclaw.json`
 - 可以通过 Terminal 做有限命令检查，但不依赖它
 
-## 计划中的部署参数（草案）
-- Image: 未来 build 后的自定义镜像
+## 推荐部署参数（ClawCloud Run）
+- Image: 你的自定义镜像（例如 `ghcr.io/<yourname>/openclaw-clawcloud:<tag>`）
 - Port: `8080`
 - Local Storage Mount Path: `/data`
 - 关键 env:
-  - `OPENCLAW_GATEWAY_TOKEN`
-  - `OPENAI_API_KEY`（或你实际用的 provider key）
+  - `OPENCLAW_GATEWAY_TOKEN`（必填）
+  - `OPENCLAW_ALLOWED_ORIGIN=https://<your-app>.clawcloudrun.com`（必填）
+  - `OPENAI_API_KEY`（使用 OpenAI / OpenAI-compatible 时必填）
+  - `OPENAI_BASE_URL`（仅当使用 OpenAI-compatible / 中转时填写）
+  - `OPENAI_MODEL`（可选；若填写，则默认主模型与 provider 模型列表都会收敛到这个模型）
   - `OPENCLAW_STATE_DIR=/data/.openclaw`
   - `OPENCLAW_WORKSPACE_DIR=/data/workspace`
   - `OPENCLAW_GATEWAY_PORT=18789`
   - `PORT=8080`
+
+## 首次部署后最小验证
+1. 打开 WebUI
+2. 发一句简单消息，确认对话可用
+3. 如果使用 OpenAI-compatible：检查 `/data/.openclaw/openclaw.json` 中是否写入了 `env.OPENAI_BASE_URL`
+4. 重新部署同一个 App（保留同一个 `/data` 挂载），确认记录与状态仍保留
+
+## 已知现象（当前不阻塞）
+- 在容器内运行 `openclaw doctor --fix` 时，可能看到：
+  - `pairing required`
+  - `Gateway not running`
+  - `systemd not installed`
+- 这些在 ClawCloud Run 容器场景下可能只是自检噪音；如果 WebUI、聊天和持久化都正常，通常不构成发布阻塞
+- WebUI 中模型/provider badge 可能显示为 `azure` 等上游分类标签；若实际对话正常、模型自报正确，可暂视为展示层问题
 
 ## 注意
 这一版虽然仍是原型，但 `v0.1.3` 已经证明这条适配路线是可行的；后续工作重点不是推翻重来，而是**基于成功基线做保守收敛**。
