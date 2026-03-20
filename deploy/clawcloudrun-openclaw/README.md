@@ -244,6 +244,7 @@ If you repeatedly need this workaround on fresh deployments, first re-check:
 - `entrypoint.sh` — startup flow
 - `configure.cjs` — env → `openclaw.json` minimal generator
 - `nginx.conf.template` — reverse proxy config
+- `.env.example` — example env values for ClawCloud Run deployment
 
 ---
 
