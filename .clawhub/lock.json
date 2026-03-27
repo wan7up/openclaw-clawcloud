@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "skills": {
+    "openclaw-tavily-search": {
+      "version": "0.1.0",
+      "installedAt": 1774580882023
+    }
+  }
+}
