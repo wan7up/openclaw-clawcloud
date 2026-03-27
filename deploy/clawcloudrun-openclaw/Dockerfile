@@ -7,7 +7,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /app/clawcloudrun/entrypoint.sh
-COPY configure.js /app/clawcloudrun/configure.js
+COPY configure.cjs /app/clawcloudrun/configure.cjs
 COPY nginx.conf.template /app/clawcloudrun/nginx.conf.template
 
 RUN chmod +x /app/clawcloudrun/entrypoint.sh

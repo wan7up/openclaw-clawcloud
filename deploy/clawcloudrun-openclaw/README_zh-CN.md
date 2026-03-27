@@ -8,6 +8,31 @@
 
 ---
 
+## 构建说明（ARM64 / multi-arch）
+
+先记一个这次已经实锤的结论：
+
+> `ghcr.io/openclaw/openclaw:latest` **本身已经提供 `linux/amd64` 和 `linux/arm64` manifest**。
+
+也就是说，如果 ARM64 构建失败，真正更常见的原因不是“官方基底镜像不支持 ARM64”，而是**本机构建环境缺少 `binfmt` / QEMU，多架构 builder 没配好**。
+
+本目录已经附带一个可重复执行的构建脚本：
+
+```bash
+cd deploy/clawcloudrun-openclaw
+./build.sh                               # 默认构建 linux/amd64,linux/arm64
+PLATFORMS=linux/arm64 LOAD=1 ./build.sh  # 本地验证 arm64 构建
+IMAGE_NAME=ghcr.io/<你的名字>/openclaw-clawcloud IMAGE_TAG=v0.1.9 PUSH=1 ./build.sh
+```
+
+脚本会自动做这些事：
+- 安装 / 刷新 `binfmt` 模拟器
+- 创建或复用专用 `buildx` builder
+- 按指定平台执行构建
+- 支持单平台 `--load`，也支持多平台 `--push`
+
+---
+
 ## 这个镜像解决什么问题
 
 在 ClawCloud Run 上直接部署 OpenClaw，通常会遇到这些现实问题：
@@ -158,9 +183,10 @@ https://your-app.us-west-1.clawcloudrun.com
 部署完成后，建议按这个顺序检查：
 
 1. 打开 WebUI
-2. 发一条简单测试消息
-3. 如果你在用 OpenAI-compatible API，检查 `/data/.openclaw/openclaw.json`，确认环境变量是否按预期写入
-4. 保留同一个 `/data` 挂载重新部署一次，确认状态仍然存在
+2. **首次部署 / 新环境第一次进入时，通常需要先完成 pairing；这是正常初始化流程，不代表部署失败**
+3. 发一条简单测试消息
+4. 如果你在用 OpenAI-compatible API，检查 `/data/.openclaw/openclaw.json`，确认环境变量是否按预期写入
+5. 保留同一个 `/data` 挂载重新部署一次，确认状态仍然存在
 
 ---
 

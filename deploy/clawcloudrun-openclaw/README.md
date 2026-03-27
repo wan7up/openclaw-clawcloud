@@ -6,6 +6,25 @@
 
 This repository provides a practical adaptation of **OpenClaw** for **ClawCloud Run**, focused on solving the deployment issues people commonly hit in this environment.
 
+## Build notes
+
+The upstream image `ghcr.io/openclaw/openclaw:latest` already publishes both `linux/amd64` and `linux/arm64` manifests. The real blocker for ARM64 builds is usually the local builder environment (missing `binfmt` / QEMU emulation), not the base image itself.
+
+A helper script is included for repeatable builds:
+
+```bash
+cd deploy/clawcloudrun-openclaw
+./build.sh                               # default: linux/amd64,linux/arm64
+PLATFORMS=linux/arm64 LOAD=1 ./build.sh  # local arm64 test build
+IMAGE_NAME=ghcr.io/<you>/openclaw-clawcloud IMAGE_TAG=v0.1.9 PUSH=1 ./build.sh
+```
+
+The script will:
+- install/refresh `binfmt` emulators
+- create/use a dedicated `buildx` builder
+- build for the requested platform(s)
+- optionally `--load` a single-platform image or `--push` a multi-arch image
+
 ## 这个仓库解决什么问题
 
 相比直接使用官方镜像，这个适配版主要处理了以下几个现实问题：
@@ -86,13 +105,16 @@ OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
 OPENAI_MODEL=gpt-5.1-codex-mini
 ```
 
+> 如果你填写了 `OPENAI_BASE_URL`，也建议同时填写 `OPENAI_MODEL`。否则某些版本下可能出现配置校验失败。
+
 ### 5. 部署完成后验证
 部署完成后建议立刻做这几步：
 
 1. 打开 ClawCloud Run 分配给你的公网地址
 2. 确认 WebUI 可以正常打开
-3. 发一句简单消息，确认聊天可用
-4. 如果你用了持久化存储，重部署后再确认记录是否还在
+3. **首次部署 / 新环境第一次进入时，通常需要先完成 pairing；这是正常初始化流程，不代表部署失败**
+4. 发一句简单消息，确认聊天可用
+5. 如果你用了持久化存储，重部署后再确认记录是否还在
 
 ### `OPENCLAW_ALLOWED_ORIGIN` 很重要
 这个值必须填写为 **ClawCloud Run 分配给你的实际公网域名 origin**，例如：

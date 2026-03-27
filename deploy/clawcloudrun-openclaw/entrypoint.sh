@@ -30,7 +30,7 @@ echo "[entrypoint] workspace dir: $WORKSPACE_DIR"
 echo "[entrypoint] gateway port: $GATEWAY_PORT"
 echo "[entrypoint] external port: $EXTERNAL_PORT"
 
-node /app/clawcloudrun/configure.js
+node /app/clawcloudrun/configure.cjs
 
 export BASIC_AUTH_BLOCK=""
 if [ -n "${AUTH_PASSWORD:-}" ]; then
@@ -61,5 +61,5 @@ EOF
 
 nginx
 
-cd /opt/openclaw/app
+cd /app
 exec openclaw gateway run

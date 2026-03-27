@@ -10,11 +10,42 @@ fs.mkdirSync(STATE_DIR, { recursive: true });
 fs.mkdirSync(WORKSPACE_DIR, { recursive: true });
 
 let config = {};
+let hadExistingConfig = false;
 try {
   config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+  hadExistingConfig = true;
   console.log('[configure] merged existing config');
 } catch {
   console.log('[configure] no existing config, creating fresh');
+}
+
+function removeKeyDeep(node, targetKey) {
+  let removed = 0;
+  if (!node || typeof node !== 'object') return removed;
+  if (Array.isArray(node)) {
+    for (const item of node) removed += removeKeyDeep(item, targetKey);
+    return removed;
+  }
+  if (Object.prototype.hasOwnProperty.call(node, targetKey)) {
+    delete node[targetKey];
+    removed += 1;
+  }
+  for (const value of Object.values(node)) {
+    removed += removeKeyDeep(value, targetKey);
+  }
+  return removed;
+}
+
+const removedAllowBotsCount = removeKeyDeep(config, 'allowBots');
+if (removedAllowBotsCount > 0 && hadExistingConfig) {
+  const backupPath = `${CONFIG_PATH}.bak-before-allowBots-cleanup-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  try {
+    fs.copyFileSync(CONFIG_PATH, backupPath);
+    console.log(`[configure] backed up existing config to ${backupPath}`);
+  } catch (err) {
+    console.warn(`[configure] failed to back up existing config before cleanup: ${err.message}`);
+  }
+  console.log(`[configure] removed ${removedAllowBotsCount} legacy allowBots key(s)`);
 }
 
 function ensure(obj, ...keys) {
