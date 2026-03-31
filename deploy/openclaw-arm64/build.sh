@@ -8,6 +8,7 @@ PLATFORMS=${PLATFORMS:-linux/arm64}
 PUSH=${PUSH:-0}
 LOAD=${LOAD:-1}
 BUILDER_NAME=${BUILDER_NAME:-multiarch}
+DOCKERFILE=${DOCKERFILE:-Dockerfile}
 
 cd "$SCRIPT_DIR"
 
@@ -23,7 +24,7 @@ fi
 docker buildx inspect --bootstrap >/dev/null
 
 IMAGE_REF="${IMAGE_NAME}:${IMAGE_TAG}"
-ARGS=(build --platform "$PLATFORMS" --progress plain -t "$IMAGE_REF")
+ARGS=(build -f "$DOCKERFILE" --platform "$PLATFORMS" --progress plain -t "$IMAGE_REF")
 if [[ "$PUSH" == "1" ]]; then
   ARGS+=(--push)
 elif [[ "$LOAD" == "1" ]]; then
@@ -34,5 +35,6 @@ fi
 ARGS+=(.)
 
 echo "[build] image: $IMAGE_REF"
+echo "[build] dockerfile: $DOCKERFILE"
 echo "[build] platforms: $PLATFORMS"
 docker buildx "${ARGS[@]}"

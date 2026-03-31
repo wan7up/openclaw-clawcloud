@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/openclaw/openclaw:2026.3.24
+ARG BASE_IMAGE=ghcr.io/openclaw/openclaw:2026.3.24-slim
 FROM ${BASE_IMAGE}
 
 USER root
@@ -8,13 +8,9 @@ COPY configure.cjs /app/arm64/configure.cjs
 
 RUN chmod +x /app/arm64/entrypoint.sh
 
-ENV HOME=/data \
-    OPENCLAW_STATE_DIR=/data/.openclaw \
+ENV OPENCLAW_STATE_DIR=/data/.openclaw \
     OPENCLAW_WORKSPACE_DIR=/data/workspace \
-    OPENCLAW_GATEWAY_PORT=18789 \
-    OPENCLAW_GATEWAY_BIND=lan \
-    OPENCLAW_CONFIG_MODE=manual \
-    OPENCLAW_MANUAL_DEVICES=1
+    OPENCLAW_GATEWAY_PORT=18789
 
 WORKDIR /app
 
