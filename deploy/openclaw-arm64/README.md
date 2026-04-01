@@ -2,6 +2,13 @@
 
 This directory is intentionally separate from `deploy/clawcloudrun-openclaw/`.
 
+> Repo layout note: this project currently uses **one GitHub repository, two GHCR packages, two logical task lines**.
+>
+> - Task 001 / ClawCloud Run line → `ghcr.io/wan7up/openclaw-clawcloud`
+> - Task 004 / ARM64 line → `ghcr.io/wan7up/openclaw-arm64`
+>
+> Shared repo does **not** mean shared deployment target. This ARM64 line is for separate low-end / non-ClawCloud machines and must remain isolated in docs, tags, and operational reasoning.
+
 ## Goal
 
 Build and deliver a plain Docker image flow for low-end ARM64 deployment targets.
@@ -225,7 +232,8 @@ Operational guidance for that class of machine:
 - task boundary explicitly separated from ClawCloud Run packaging
 - standard ARM64 image build has been reproduced successfully (`openclaw-arm64:local`)
 - current known-good GHCR baseline: `ghcr.io/wan7up/openclaw-arm64:2026.3.24-manual-devices-v8`
-- later release strategy for this line: follow upstream OpenClaw release version and publish tags like `ghcr.io/wan7up/openclaw-arm64:2026.3.31-manual-devices-v8`
+- later release strategy for this line: follow upstream OpenClaw release version and publish tags like `ghcr.io/wan7up/openclaw-arm64:2026.3.31-manual-devices-v9`
+- current CLI mitigation: ARM64 line now sets `OPENCLAW_NO_RESPAWN=1` by default to avoid the upstream CLI respawn/bootstrap path that can hang on some low-end ARM64 machines
 - compatibility note: published ARM64 tags should be rewritten to `linux/arm/v8` manifest metadata after push so older Docker stacks (for example some CoreELEC / Docker 19 hosts) can pull them reliably
 - new slim line added:
   - dockerfile: `Dockerfile.slim`

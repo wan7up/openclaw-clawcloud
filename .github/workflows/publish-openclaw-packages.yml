@@ -49,9 +49,9 @@ jobs:
           print(f"clawcloud_repo=ghcr.io/{owner}/openclaw-clawcloud")
           print(f"arm64_repo=ghcr.io/{owner}/openclaw-arm64")
           print(f"clawcloud_version_tag=v{upstream}")
-          print(f"arm64_version_tag={upstream}-manual-devices-v8")
+          print(f"arm64_version_tag={upstream}-manual-devices-v9")
           print("clawcloud_latest_tag=latest")
-          print("arm64_latest_tag=latest-manual-devices-v8")
+          print("arm64_latest_tag=latest-manual-devices-v9")
           PY
 
       - name: Set up QEMU

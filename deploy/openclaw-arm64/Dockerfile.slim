@@ -11,7 +11,8 @@ RUN chmod +x /app/arm64/entrypoint.sh
 
 ENV OPENCLAW_STATE_DIR=/data/.openclaw \
     OPENCLAW_WORKSPACE_DIR=/data/workspace \
-    OPENCLAW_GATEWAY_PORT=18789
+    OPENCLAW_GATEWAY_PORT=18789 \
+    OPENCLAW_NO_RESPAWN=1
 
 WORKDIR /app
 

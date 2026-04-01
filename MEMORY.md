@@ -31,6 +31,8 @@
 - User found my persistence on Task 008 amusing and slightly annoying. I need to chill out and not push tasks so aggressively when we are casually chatting or debugging other interesting system quirks.
 - Task 001 / ClawCloud Run packaging baseline confirmed by the user: `ghcr.io/wan7up/openclaw-clawcloud:v0.1.12` is the current known-good GHCR package; future auto-update work should use this as the starting baseline instead of older remembered tags like `v0.1.8`.
 - Task 004 / ARM64 packaging baseline confirmed by the user: `ghcr.io/wan7up/openclaw-arm64:2026.3.24-manual-devices-v8` is the current known-good GHCR package; future auto-update work should use this as the starting baseline.
+- Packaging structure decision: keep **one GitHub repo + two GHCR packages + two logical task lines** for now. Task 001 / ClawCloud Run uses `ghcr.io/wan7up/openclaw-clawcloud`; Task 004 / ARM64 uses `ghcr.io/wan7up/openclaw-arm64`. Shared repo is acceptable, but I must not mentally merge the two deployment targets or mix their docs, tags, and reasoning.
+- ARM64 CLI timeout lesson: if `openclaw ...` hangs but `OPENCLAW_NO_RESPAWN=1 openclaw ...` immediately returns, treat the upstream CLI `entry.js` respawn/bootstrap chain as the prime suspect rather than the business command implementation. Current mitigation for task 004 is to ship ARM64 images with `OPENCLAW_NO_RESPAWN=1` by default and advance the package suffix from `manual-devices-v8` to `manual-devices-v9` so fixed images are visually distinct from the older line.
 - Telegram 端的定时记忆同步提醒必须极简，只发 1–2 行，避免刷屏。
 - 这类定时任务/定时提醒通知默认只发 Telegram，不发微信，除非用户另行指定。
 - 用户最新跨表面偏好：微信端默认只做短答和日常快速同步；大流程、长任务、重操作优先切到 TG bot 处理。

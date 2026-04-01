@@ -112,7 +112,7 @@ def main():
             },
             'arm64': {
                 'baseline_tag': TARGETS['arm64']['baseline_tag'],
-                'next_image_tag_suggestion': f"{release['upstream_version']}-manual-devices-v8",
+                'next_image_tag_suggestion': f"{release['upstream_version']}-manual-devices-v9",
             },
         },
     }
