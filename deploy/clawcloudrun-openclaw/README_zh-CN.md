@@ -47,6 +47,7 @@ IMAGE_NAME=ghcr.io/<你的名字>/openclaw-clawcloud IMAGE_TAG=v0.1.9 PUSH=1 ./b
 - 把状态目录迁到 `/data/.openclaw`
 - 把 workspace 迁到 `/data/workspace`
 - 启动时根据环境变量生成最小 `openclaw.json`
+- 默认关闭 builtin memory vector（sqlite-vec）以优先保证 ClawCloud Run 场景下的 `memory_search` 可用；如确需启用，可显式传 `OPENCLAW_MEMORY_VECTOR_ENABLED=1`
 - 用 `nginx` 作为对外的 HTTP / WebSocket 入口
 - 把请求代理到内部 OpenClaw gateway（`127.0.0.1:18789`）
 

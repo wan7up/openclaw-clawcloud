@@ -73,6 +73,14 @@ ensure(config, 'agents', 'defaults');
 config.agents.defaults.workspace = WORKSPACE_DIR;
 ensure(config, 'agents', 'defaults', 'model');
 
+const memoryVectorEnabledRaw = String(process.env.OPENCLAW_MEMORY_VECTOR_ENABLED || '').trim().toLowerCase();
+const memoryVectorEnabled = ['1', 'true', 'yes', 'on'].includes(memoryVectorEnabledRaw);
+ensure(config, 'agents', 'defaults', 'memorySearch');
+if (!config.agents.defaults.memorySearch.provider) config.agents.defaults.memorySearch.provider = 'local';
+ensure(config, 'agents', 'defaults', 'memorySearch', 'store');
+ensure(config, 'agents', 'defaults', 'memorySearch', 'store', 'vector');
+config.agents.defaults.memorySearch.store.vector.enabled = memoryVectorEnabled;
+
 const hasOpenAIBaseUrl = Boolean(process.env.OPENAI_BASE_URL);
 const hasOpenAICredentials = Boolean(process.env.OPENAI_API_KEY);
 const hasOpenAIModel = Boolean(process.env.OPENAI_MODEL);
