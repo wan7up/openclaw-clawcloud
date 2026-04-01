@@ -1,0 +1,82 @@
+name: update-release-pages
+
+permissions:
+  contents: write
+  packages: read
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - publish-openclaw-packages
+    types:
+      - completed
+
+jobs:
+  refresh:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load package baseline state
+        id: state
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          p = Path('memory/openclaw-package-baselines.json')
+          data = json.loads(p.read_text())
+          upstream = data['upstream_version']
+          print(f"upstream_version={upstream}")
+          print(f"clawcloud_image=ghcr.io/${{ github.repository_owner }}/openclaw-clawcloud:v{upstream}")
+          print(f"clawcloud_latest=ghcr.io/${{ github.repository_owner }}/openclaw-clawcloud:latest")
+          print(f"arm64_image=ghcr.io/${{ github.repository_owner }}/openclaw-arm64:{upstream}-manual-devices-v9")
+          print(f"arm64_latest=ghcr.io/${{ github.repository_owner }}/openclaw-arm64:latest-manual-devices-v9")
+          PY
+
+      - name: Render release notes
+        run: |
+          cat > /tmp/release-notes.md <<EOF
+          # Latest package refs
+
+          This repository publishes **two delivery lines**.
+
+          ## Task 001 / ClawCloud Run
+          - Version tag: `${{ steps.state.outputs.clawcloud_image }}`
+          - Rolling tag: `${{ steps.state.outputs.clawcloud_latest }}`
+          - Positioning: ClawCloud Run friendly package with persistent `/data`, nginx on `8080`, and env-driven bootstrap.
+
+          ## Task 004 / ARM64
+          - Version tag: `${{ steps.state.outputs.arm64_image }}`
+          - Rolling tag: `${{ steps.state.outputs.arm64_latest }}`
+          - Positioning: non-slim ARM64 package for CoreELEC / low-power ARM boxes, with manual-first defaults and ARM v8 compatible manifest metadata.
+
+          ## Upstream base
+          - OpenClaw `${{ steps.state.outputs.upstream_version }}`
+          EOF
+
+      - name: Create or update rolling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view latest-packages >/dev/null 2>&1; then
+            gh release edit latest-packages \
+              --title "Latest package refs" \
+              --notes-file /tmp/release-notes.md
+          else
+            gh release create latest-packages \
+              --title "Latest package refs" \
+              --notes-file /tmp/release-notes.md
+          fi
+
+      - name: Move repository latest release marker to rolling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api \
+            --method PATCH \
+            repos/${{ github.repository }}/releases/tags/latest-packages \
+            -f make_latest=true

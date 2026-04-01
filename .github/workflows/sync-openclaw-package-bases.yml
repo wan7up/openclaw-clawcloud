@@ -1,0 +1,56 @@
+name: sync-openclaw-package-bases
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    # 04:30 Asia/Singapore ≈ 20:30 UTC previous day.
+    # Runs once per day so a new upstream OpenClaw release gets picked up by the next day.
+    - cron: '30 20 * * *'
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'deploy/clawcloudrun-openclaw/**'
+      - 'deploy/openclaw-arm64/**'
+      - 'scripts/sync_openclaw_package_bases.py'
+      - 'memory/openclaw-package-baselines.json'
+      - '.github/workflows/sync-openclaw-package-bases.yml'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Sync package base versions
+        run: python3 scripts/sync_openclaw_package_bases.py
+
+      - name: Show diff
+        run: git diff -- deploy/clawcloudrun-openclaw/Dockerfile deploy/openclaw-arm64/Dockerfile deploy/openclaw-arm64/Dockerfile.slim memory/openclaw-package-baselines.json || true
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- deploy/clawcloudrun-openclaw/Dockerfile deploy/openclaw-arm64/Dockerfile deploy/openclaw-arm64/Dockerfile.slim memory/openclaw-package-baselines.json; then
+            echo 'No changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add deploy/clawcloudrun-openclaw/Dockerfile \
+                  deploy/openclaw-arm64/Dockerfile \
+                  deploy/openclaw-arm64/Dockerfile.slim \
+                  memory/openclaw-package-baselines.json
+          git commit -m "chore(packaging): sync OpenClaw base to latest release"
+          git push
