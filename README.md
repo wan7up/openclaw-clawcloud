@@ -22,11 +22,14 @@
 - 滚动标签：`ghcr.io/wan7up/openclaw-arm64:latest-manual-devices-v9`
 - 上游基础版本：OpenClaw `2026.3.31`
 
-## 两个镜像分别做了什么适配
+## 快速入口
+
+- ClawCloud Run 部署说明：[`deploy/clawcloudrun-openclaw/README.md`](deploy/clawcloudrun-openclaw/README.md)
+- ARM64 部署说明：[`deploy/openclaw-arm64/README.md`](deploy/openclaw-arm64/README.md)
+
+## 这两个镜像分别做了什么适配
 
 ### ClawCloud Run 适配版
-目录：`deploy/clawcloudrun-openclaw/`
-
 主要调整：
 - 状态目录改为 `/data/.openclaw`
 - workspace 改为 `/data/workspace`
@@ -35,12 +38,45 @@
 - 默认关闭 memory vector，以提高 ClawCloud Run 场景下的稳定性
 
 ### ARM64 适配版
-目录：`deploy/openclaw-arm64/`
-
 主要调整：
 - 基于 OpenClaw 官方镜像修改为更适合 ARM64 机型运行的版本
 - 补充适合 ARM64 设备的默认运行配置
-- 兼容较老 Docker / CoreELEC 环境的镜像 manifest 标记
+- 兼容部分较老 Docker / CoreELEC 环境的镜像 manifest 标记
+
+## 部署完成后的浏览器授权
+
+无论是 ClawCloud Run 还是 ARM64 机器，首次打开 WebUI 后，通常都需要先做一次浏览器授权（pairing）。
+
+### 1）先在浏览器里打开页面
+打开 WebUI 地址，等浏览器侧产生新的授权请求。
+
+### 2）查询 request id
+优先用：
+
+```bash
+cat /data/.openclaw/devices/pending.json
+```
+
+如果机器装了 `jq`，也可以直接提取：
+
+```bash
+jq -r 'keys[]' /data/.openclaw/devices/pending.json
+```
+
+### 3）执行授权命令
+把下面的 `REQUEST_ID` 替换成上一步查到的值：
+
+```bash
+node --input-type=module -e "import('/app/dist/plugin-sdk/device-pair.js').then(async m => { const r = await m.approveDevicePairing('REQUEST_ID','/data/.openclaw'); console.log(JSON.stringify(r,null,2)); }).catch(err => { console.error(err); process.exit(1); })"
+```
+
+### 4）确认是否授权成功
+
+```bash
+cat /data/.openclaw/devices/paired.json
+```
+
+如果 `paired.json` 里已经出现对应设备记录，就说明这次浏览器授权已经成功。
 
 ## 自动更新与页面维护
 

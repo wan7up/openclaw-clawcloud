@@ -48,10 +48,57 @@ jobs:
           - 滚动标签：`${{ steps.state.outputs.clawcloud_latest }}`
           - 说明：针对 ClawCloud Run 运行环境做适配的修改版本。
 
+          ### ClawCloud Run → Create App 页面填写
+          - Image Name：`${{ steps.state.outputs.clawcloud_image }}`
+          - Port：`8080`
+          - Local Storage 挂载路径：`/data`
+          - 建议环境变量：
+
+          ```env
+          OPENCLAW_GATEWAY_TOKEN=replace-me
+          OPENCLAW_ALLOWED_ORIGIN=https://your-app.us-west-1.clawcloudrun.com
+          OPENCLAW_STATE_DIR=/data/.openclaw
+          OPENCLAW_WORKSPACE_DIR=/data/workspace
+          OPENCLAW_GATEWAY_PORT=18789
+          PORT=8080
+          OPENAI_API_KEY=replace-me
+          ```
+
           ## ARM64 适配版
           - 版本标签：`${{ steps.state.outputs.arm64_image }}`
           - 滚动标签：`${{ steps.state.outputs.arm64_latest }}`
           - 说明：基于 OpenClaw 官方镜像调整为更适合 ARM64 机型使用的修改版本。
+
+          ### ARM64 `docker run` 示例
+          ```bash
+          docker run -d \
+            --name openclaw-arm64 \
+            --restart unless-stopped \
+            -p 18789:18789 \
+            --env-file /storage/openclaw/.env \
+            -e HOME=/data \
+            -e OPENCLAW_GATEWAY_BIND=lan \
+            -e OPENCLAW_CONFIG_MODE=manual \
+            -e OPENCLAW_MANUAL_DEVICES=1 \
+            -v /storage/openclaw:/data \
+            ${{ steps.state.outputs.arm64_image }}
+          ```
+
+          ## 浏览器授权（pairing）关键命令
+          ### 查询 request id
+          ```bash
+          cat /data/.openclaw/devices/pending.json
+          ```
+
+          ### 执行授权
+          ```bash
+          node --input-type=module -e "import('/app/dist/plugin-sdk/device-pair.js').then(async m => { const r = await m.approveDevicePairing('REQUEST_ID','/data/.openclaw'); console.log(JSON.stringify(r,null,2)); }).catch(err => { console.error(err); process.exit(1); })"
+          ```
+
+          ### 查看授权结果
+          ```bash
+          cat /data/.openclaw/devices/paired.json
+          ```
 
           ## 上游基础版本
           - OpenClaw `${{ steps.state.outputs.upstream_version }}`
