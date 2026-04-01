@@ -67,7 +67,7 @@ jq -r 'keys[]' /data/.openclaw/devices/pending.json
 把下面的 `REQUEST_ID` 替换成上一步查到的值：
 
 ```bash
-node --input-type=module -e "import('/app/dist/plugin-sdk/device-pair.js').then(async m => { const r = await m.approveDevicePairing('REQUEST_ID','/data/.openclaw'); console.log(JSON.stringify(r,null,2)); }).catch(err => { console.error(err); process.exit(1); })"
+openclaw gateway call device.pair.approve --params '{"requestId":"REQUEST_ID"}'
 ```
 
 ### 4）确认是否授权成功

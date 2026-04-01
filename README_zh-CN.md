@@ -219,7 +219,7 @@ cat /data/.openclaw/devices/pending.json
 把下面的 `NEW_ID` 替换成你刚看到的 request ID：
 
 ```bash
-node --input-type=module -e "import('/app/dist/plugin-sdk/device-pair.js').then(async m => { const r = await m.approveDevicePairing('NEW_ID','/data/.openclaw'); console.log(JSON.stringify(r,null,2)); }).catch(err => { console.error(err); process.exit(1); })"
+openclaw gateway call device.pair.approve --params '{"requestId":"NEW_ID"}'
 ```
 
 ### 第 3 步：确认它进入 `paired.json`

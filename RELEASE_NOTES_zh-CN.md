@@ -112,7 +112,7 @@ https://your-app.us-west-1.clawcloudrun.com
 但如果 WebUI pairing 卡住，可以按 README 中记录的兜底方法操作：
 
 1. 刷新 WebUI，生成新的 pending request
-2. 在 terminal 中查看 `/data/.openclaw/devices/pending.json`
+2. 在 terminal 中查看 `/data/.openclaw/devices/pending.json`，拿到 request id 后执行 `openclaw gateway call device.pair.approve --params '{"requestId":"REQUEST_ID"}'`
 3. 手动批准对应 requestId
 4. 检查 `/data/.openclaw/devices/paired.json`
 
