@@ -25,6 +25,12 @@ docker buildx inspect --bootstrap >/dev/null
 
 IMAGE_REF="${IMAGE_NAME}:${IMAGE_TAG}"
 ARGS=(build -f "$DOCKERFILE" --platform "$PLATFORMS" --progress plain -t "$IMAGE_REF")
+if [[ -n "${OPENCLAW_VERSION:-}" ]]; then
+  ARGS+=(--build-arg "OPENCLAW_VERSION=$OPENCLAW_VERSION")
+fi
+if [[ -n "${BASE_IMAGE:-}" ]]; then
+  ARGS+=(--build-arg "BASE_IMAGE=$BASE_IMAGE")
+fi
 if [[ "$PUSH" == "1" ]]; then
   ARGS+=(--push)
 elif [[ "$LOAD" == "1" ]]; then

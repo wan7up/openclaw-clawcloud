@@ -45,6 +45,10 @@ ARGS=(
   -t "$IMAGE_REF"
 )
 
+if [[ -n "${BASE_IMAGE:-}" ]]; then
+  ARGS+=(--build-arg "BASE_IMAGE=$BASE_IMAGE")
+fi
+
 if [[ "$PUSH" == "1" ]]; then
   ARGS+=(--push)
 elif [[ "$LOAD" == "1" ]]; then

@@ -1,0 +1,20 @@
+{
+  "targets": {
+    "clawcloud": {
+      "image_repo": "ghcr.io/wan7up/openclaw-clawcloud",
+      "baseline_tag": "v0.1.12",
+      "tag_style": "carry-forward"
+    },
+    "arm64": {
+      "image_repo": "ghcr.io/wan7up/openclaw-arm64",
+      "baseline_tag": "2026.3.24-manual-devices-v8",
+      "tag_style": "upstream-manual-devices-v8"
+    }
+  },
+  "repo": "openclaw/openclaw",
+  "release_tag": "v2026.3.31",
+  "upstream_version": "2026.3.31",
+  "published_at": "2026-03-31T20:54:44Z",
+  "release_name": "openclaw 2026.3.31",
+  "html_url": "https://github.com/openclaw/openclaw/releases/tag/v2026.3.31"
+}

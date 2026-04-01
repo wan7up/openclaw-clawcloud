@@ -153,6 +153,7 @@ docker run -d \
   --name openclaw-arm64 \
   --restart unless-stopped \
   -p 18789:18789 \
+  -e HOME=/data \
   -e OPENCLAW_GATEWAY_BIND=lan \
   -e OPENCLAW_CONFIG_MODE=manual \
   -e OPENCLAW_MANUAL_DEVICES=1 \
@@ -223,10 +224,9 @@ Operational guidance for that class of machine:
 - line initialized and first committed at `4a3b85c`
 - task boundary explicitly separated from ClawCloud Run packaging
 - standard ARM64 image build has been reproduced successfully (`openclaw-arm64:local`)
-- published successfully to GHCR:
-  - `ghcr.io/wan7up/openclaw-arm64:v0.1.0`
-  - `ghcr.io/wan7up/openclaw-arm64:latest`
-- published standard image digest: `sha256:2877b2bc62dfe7359ea725f91ed6718b61c3f2a20f659060d286ff848d20aa80`
+- current known-good GHCR baseline: `ghcr.io/wan7up/openclaw-arm64:2026.3.24-manual-devices-v8`
+- later release strategy for this line: follow upstream OpenClaw release version and publish tags like `ghcr.io/wan7up/openclaw-arm64:2026.3.31-manual-devices-v8`
+- compatibility note: published ARM64 tags should be rewritten to `linux/arm/v8` manifest metadata after push so older Docker stacks (for example some CoreELEC / Docker 19 hosts) can pull them reliably
 - new slim line added:
   - dockerfile: `Dockerfile.slim`
   - upstream base: `ghcr.io/openclaw/openclaw:2026.3.24-slim`

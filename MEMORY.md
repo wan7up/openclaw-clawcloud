@@ -24,15 +24,22 @@
 - OPENAI_API_KEY injected into systemd service via `~/.config/systemd/user/openclaw-gateway.service.d/override.conf` so Gateway process can resolve `${OPENAI_API_KEY}` in openclaw.json. Without this, systemd service has no access to the variable → "APIKEY incorrect" errors.
 - openclaw.json also has a top-level `env.OPENAI_API_KEY` field (system env injection zone, not visible in WebUI). This is normal; left as-is for now.
 - Do NOT confabulate or guess conclusions without evidence. User has explicitly called this out.
+- 关于“稍后我会主动回来汇报 / 定时提醒 / 一会儿我再回复你”这类话术，必须极其严格：**只有当我已经真实挂上可执行的触发机制**（如 `openclaw system event --mode now`、已生效的 cron / heartbeat 兜底、或其他确定可触发的新一轮机制）时，才可以这样说；否则必须明确说明“这轮结束后我不会自动续上”。不要学网页版 GPT 那种明明做不到还口头承诺的坏毛病。
 - When making config changes, always scan ALL locations: global `agents.defaults`, AND per-agent entries in `agents.list` (agentb, agentc etc.). Partial updates cause subtle breakage.
 - **核心任务索引**：全局的主任务清单保存在工作区根目录的 `TASKS.md` 中。当被问及当前任务、计划或待办事项时，必须优先读取此文件。相关详细子任务清单可能存放在 `deploy/` 等子目录。
 - **Tailscale WebUI 故障排查**: 如果通过 Tailscale Serve (HTTPS) 访问 WebUI 时遇到无法弹出申请、死循环提示 `pairing required` 的情况，核心原因是 `gateway.controlUi.allowInsecureAuth` 被错误地设为了 `true`，导致安全上下文冲突。必须在 `openclaw.json` 中删除 `allowInsecureAuth` 后门，并在 `allowedOrigins` 添加 Tailscale 域名。重启网关后，浏览器才能正常发起加密的设备配对请求，随后使用 `openclaw devices approve <id>` 即可放行。
 - User found my persistence on Task 008 amusing and slightly annoying. I need to chill out and not push tasks so aggressively when we are casually chatting or debugging other interesting system quirks.
+- Task 001 / ClawCloud Run packaging baseline confirmed by the user: `ghcr.io/wan7up/openclaw-clawcloud:v0.1.12` is the current known-good GHCR package; future auto-update work should use this as the starting baseline instead of older remembered tags like `v0.1.8`.
+- Task 004 / ARM64 packaging baseline confirmed by the user: `ghcr.io/wan7up/openclaw-arm64:2026.3.24-manual-devices-v8` is the current known-good GHCR package; future auto-update work should use this as the starting baseline.
 - Telegram 端的定时记忆同步提醒必须极简，只发 1–2 行，避免刷屏。
+- 这类定时任务/定时提醒通知默认只发 Telegram，不发微信，除非用户另行指定。
+- 用户最新跨表面偏好：微信端默认只做短答和日常快速同步；大流程、长任务、重操作优先切到 TG bot 处理。
 - Docker 网络绑定经验：若想“禁止公网直连，但允许本机回环 + SSH 隧道访问”，容器内应用应监听 `0.0.0.0`，而 Docker 端口发布应绑定宿主机 `127.0.0.1:PORT:PORT`。不要把应用本身绑到容器内 `127.0.0.1`，否则宿主机和 SSH 隧道都会访问失败。
 - `cliproxyapi` 容器的 auth 凭据目录正确挂载点是 `/data/auths`；挂到 `/root/.cli-proxy-api` 会导致服务启动后显示 0 clients，并对推理请求返回 502。
+- CoreELEC 上给用户复制 Docker 运行命令时，宿主路径不要写成抽象占位符（如 `/你的数据目录`）让用户原样贴；优先给出真实推荐路径（如 `/storage/openclaw`）或命名卷版本（如 `openclaw-data:/data`），否则很容易触发只读文件系统/挂载路径创建失败。
 - QMD / memory_search 排障经验：若 `memory_search` 报 OpenAI embeddings 401，而聊天模型本身正常，优先怀疑记忆检索仍在独立走 OpenAI embeddings provider，而不是复用聊天模型的 openai-compatible baseUrl。修复时要分层检查 provider/key/baseUrl、collection 命名是否一致（如 `memory-root-main` vs `memory-root`）、`node-llama-cpp` 是否真的装入 OpenClaw 运行时，以及机器内存/CPU 是否足以承载本地 query。
 - Telegram 群聊排障经验：账号级 `groupPolicy` 打开不代表群聊就能用；若顶层 `channels.telegram.groupPolicy` 仍拦截，群消息会在上层被静默丢弃。改 `openclaw.json` 后若未 `config.apply`，运行态不会生效。
+- Tavily 接入分层经验（2026-03-30）：`openclaw-tavily-search` skill 只是上层使用说明/路由偏好；真正提供 `tavily_search` / `tavily_extract` / `tavily_crawl` / `tavily_map` / `tavily_research` 工具的是插件 `openclaw-tavily`。正确配置键名是 `plugins.entries.openclaw-tavily`，不是想当然写成 `plugins.entries.tavily`。当前推荐做法：API key 走 `TAVILY_API_KEY` 环境变量，非敏感默认值可显式写入该插件的 `config`，再用 `config.apply` 优雅生效。
 - 关于“失忆/续线断片”的新规则（2026-03-20）：跨夜、长间隔、被定时任务/自动提醒插队的项目，**绝不能依赖聊天窗口短期上下文**。必须在暂停前用“收尾”做结构化交接，至少写清：当前主题、已确认事实、当前版本号、当前卡点、下一步动作、由谁执行。否则第二天极易只剩零碎记忆，导致判断漂移和错误续线。
 - 这次 ClawCloud Run 任务的教训：如果用户明确贴出了“我之前说过的原话/记录”，应把该记录视为最高优先级现场事实；不要先拿较旧的摘要记忆去覆盖它，更不能在版本号、当前阶段、执行人（我来做 vs 用户来做）上乱补。先对齐记录，再行动。
 
