@@ -96,8 +96,7 @@ jobs:
             image="${{ steps.state.outputs.arm64_repo }}:${tag}"
             descriptor="/tmp/${tag//[^a-zA-Z0-9_.-]/_}-arm-v8.json"
             python3 scripts/make_arm_v8_descriptor.py --image "$image" --output "$descriptor"
-            digest=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["digest"])' "$descriptor")
-            docker buildx imagetools create -f "$descriptor" -t "$image" "$image@$digest"
+            docker buildx imagetools create -f "$descriptor" -t "$image"
           done
 
       - name: Show published refs
