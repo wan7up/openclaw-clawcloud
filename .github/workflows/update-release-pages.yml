@@ -72,11 +72,8 @@ jobs:
               --notes-file /tmp/release-notes.md
           fi
 
-      - name: Move repository latest release marker to rolling release
+      - name: Mark rolling release as Latest
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api \
-            --method PATCH \
-            repos/${{ github.repository }}/releases/tags/latest-packages \
-            -f make_latest=true
+          gh release edit latest-packages --latest
