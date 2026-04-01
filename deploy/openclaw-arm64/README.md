@@ -181,6 +181,22 @@ docker run -d \
 
 ## Useful runtime commands
 
+### CLI self-check note (important)
+
+Current `manual-devices-v9` is a **usable mitigation build**, not a perfectly clean fix.
+
+What is currently known:
+- the image defaults `OPENCLAW_NO_RESPAWN=1` to avoid the upstream CLI respawn/bootstrap hang seen on some low-end ARM64 machines
+- `openclaw health --json` and `openclaw status --json` are the preferred machine-readable checks
+- human-readable `openclaw status` can still be abnormally slow and may print repeated Feishu plugin registration logs before returning
+
+For routine checks on this ARM64 line, prefer:
+
+```bash
+OPENCLAW_NO_RESPAWN=1 openclaw health --json
+OPENCLAW_NO_RESPAWN=1 openclaw status --json
+```
+
 ### View logs
 
 ```bash
