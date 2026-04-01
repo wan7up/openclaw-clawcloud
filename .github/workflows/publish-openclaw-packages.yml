@@ -1,5 +1,9 @@
 name: publish-openclaw-packages
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     branches:

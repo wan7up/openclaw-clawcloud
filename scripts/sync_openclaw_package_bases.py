@@ -6,7 +6,7 @@ import sys
 import urllib.request
 from pathlib import Path
 
-WORKSPACE = Path('/root/.openclaw/workspace')
+WORKSPACE = Path(__file__).resolve().parent.parent
 STATE_PATH = WORKSPACE / 'memory' / 'openclaw-package-baselines.json'
 
 TARGETS = {

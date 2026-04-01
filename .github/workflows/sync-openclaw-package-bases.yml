@@ -1,5 +1,8 @@
 name: sync-openclaw-package-bases
 
+permissions:
+  contents: write
+
 on:
   schedule:
     # 04:30 Asia/Singapore ≈ 20:30 UTC previous day.
