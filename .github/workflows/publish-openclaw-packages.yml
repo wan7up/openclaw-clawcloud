@@ -3,6 +3,7 @@ name: publish-openclaw-packages
 on:
   push:
     branches:
+      - master
       - main
     paths:
       - 'deploy/clawcloudrun-openclaw/**'

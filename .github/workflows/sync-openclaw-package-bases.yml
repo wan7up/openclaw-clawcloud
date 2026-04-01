@@ -5,6 +5,16 @@ on:
     # 04:30 Asia/Singapore ≈ 20:30 UTC previous day.
     # Runs once per day so a new upstream OpenClaw release gets picked up by the next day.
     - cron: '30 20 * * *'
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'deploy/clawcloudrun-openclaw/**'
+      - 'deploy/openclaw-arm64/**'
+      - 'scripts/sync_openclaw_package_bases.py'
+      - 'memory/openclaw-package-baselines.json'
+      - '.github/workflows/sync-openclaw-package-bases.yml'
   workflow_dispatch:
 
 jobs:
