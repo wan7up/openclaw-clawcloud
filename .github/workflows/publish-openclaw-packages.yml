@@ -78,8 +78,8 @@ jobs:
             ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_version_tag }}
             ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_latest_tag }}
           labels: |
-            org.opencontainers.image.title=OpenClaw for ClawCloud Run
-            org.opencontainers.image.description=Task 001 / ClawCloud Run package with persistent /data, nginx on 8080, env-driven bootstrap, and memory vector disabled by default for ClawCloud Run stability.
+            org.opencontainers.image.title=OpenClaw official-image adaptation for ClawCloud Run
+            org.opencontainers.image.description=An adaptation image based on the official OpenClaw image, adjusted for ClawCloud Run deployment and persistence.
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}#readme
@@ -95,8 +95,8 @@ jobs:
             ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_version_tag }}
             ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_latest_tag }}
           labels: |
-            org.opencontainers.image.title=OpenClaw ARM64 manual-first package
-            org.opencontainers.image.description=Task 004 / non-slim ARM64 package for CoreELEC and low-power ARM devices, with manual-first defaults, OPENCLAW_NO_RESPAWN=1 mitigation, and linux/arm/v8-compatible manifest metadata.
+            org.opencontainers.image.title=OpenClaw official-image adaptation for ARM64 devices
+            org.opencontainers.image.description=An adaptation image based on the official OpenClaw image, adjusted for ARM64 devices and related deployment environments.
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}#readme

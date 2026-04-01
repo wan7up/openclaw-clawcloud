@@ -39,21 +39,21 @@ jobs:
       - name: Render release notes
         run: |
           cat > /tmp/release-notes.md <<EOF
-          # Latest package refs
+          # 最新镜像下载信息
 
-          This repository publishes **two delivery lines**.
+          这个仓库提供两个**基于 OpenClaw 官方镜像**修改的适配版本镜像，分别对应不同部署环境与机型。
 
-          ## Task 001 / ClawCloud Run
-          - Version tag: `${{ steps.state.outputs.clawcloud_image }}`
-          - Rolling tag: `${{ steps.state.outputs.clawcloud_latest }}`
-          - Positioning: ClawCloud Run friendly package with persistent `/data`, nginx on `8080`, and env-driven bootstrap.
+          ## ClawCloud Run 适配版
+          - 版本标签：`${{ steps.state.outputs.clawcloud_image }}`
+          - 滚动标签：`${{ steps.state.outputs.clawcloud_latest }}`
+          - 说明：针对 ClawCloud Run 运行环境做适配的修改版本。
 
-          ## Task 004 / ARM64
-          - Version tag: `${{ steps.state.outputs.arm64_image }}`
-          - Rolling tag: `${{ steps.state.outputs.arm64_latest }}`
-          - Positioning: non-slim ARM64 package for CoreELEC / low-power ARM boxes, with manual-first defaults and ARM v8 compatible manifest metadata.
+          ## ARM64 适配版
+          - 版本标签：`${{ steps.state.outputs.arm64_image }}`
+          - 滚动标签：`${{ steps.state.outputs.arm64_latest }}`
+          - 说明：基于 OpenClaw 官方镜像调整为更适合 ARM64 机型使用的修改版本。
 
-          ## Upstream base
+          ## 上游基础版本
           - OpenClaw `${{ steps.state.outputs.upstream_version }}`
           EOF
 
@@ -64,11 +64,11 @@ jobs:
           set -euo pipefail
           if gh release view latest-packages >/dev/null 2>&1; then
             gh release edit latest-packages \
-              --title "Latest package refs" \
+              --title "最新镜像下载信息" \
               --notes-file /tmp/release-notes.md
           else
             gh release create latest-packages \
-              --title "Latest package refs" \
+              --title "最新镜像下载信息" \
               --notes-file /tmp/release-notes.md
           fi
 
