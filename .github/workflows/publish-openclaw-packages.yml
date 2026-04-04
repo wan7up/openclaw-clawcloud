@@ -17,6 +17,11 @@ on:
       - 'memory/openclaw-package-baselines.json'
       - '.github/workflows/publish-openclaw-packages.yml'
       - '.github/workflows/sync-openclaw-package-bases.yml'
+  workflow_run:
+    workflows:
+      - sync-openclaw-package-bases
+    types:
+      - completed
   workflow_dispatch:
 
 concurrency:
@@ -25,6 +30,13 @@ concurrency:
 
 jobs:
   publish:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.name == 'sync-openclaw-package-bases' &&
+        github.event.workflow_run.head_branch == 'main'
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -77,12 +89,6 @@ jobs:
           tags: |
             ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_version_tag }}
             ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_latest_tag }}
-          labels: |
-            org.opencontainers.image.title=OpenClaw official-image adaptation for ClawCloud Run
-            org.opencontainers.image.description=An adaptation image based on the official OpenClaw image, adjusted for ClawCloud Run deployment and persistence.
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.url=https://github.com/${{ github.repository }}
-            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}#readme
 
       - name: Build and push task 004 / ARM64 package
         uses: docker/build-push-action@v6
@@ -94,12 +100,6 @@ jobs:
           tags: |
             ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_version_tag }}
             ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_latest_tag }}
-          labels: |
-            org.opencontainers.image.title=OpenClaw official-image adaptation for ARM64 devices
-            org.opencontainers.image.description=An adaptation image based on the official OpenClaw image, adjusted for ARM64 devices and related deployment environments.
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.url=https://github.com/${{ github.repository }}
-            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}#readme
 
       - name: Rewrite ARM64 tags as linux/arm/v8-compatible manifests
         run: |
