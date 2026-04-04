@@ -11,9 +11,15 @@ export OPENCLAW_STATE_DIR="$STATE_DIR"
 export OPENCLAW_WORKSPACE_DIR="$WORKSPACE_DIR"
 export OPENCLAW_GATEWAY_PORT="$GATEWAY_PORT"
 
-mkdir -p "$STATE_DIR" "$WORKSPACE_DIR"
+mkdir -p /data "$STATE_DIR" "$WORKSPACE_DIR"
 mkdir -p "$STATE_DIR/agents/main/sessions" "$STATE_DIR/credentials"
 chmod 700 "$STATE_DIR" || true
+
+# Make plugin installers that write to ~/.openclaw land on the same persistent state dir.
+mkdir -p "$HOME"
+rm -rf "$HOME/.openclaw" 2>/dev/null || true
+ln -s "$STATE_DIR" "$HOME/.openclaw"
+mkdir -p "$HOME/.npm"
 
 if [ -z "${OPENCLAW_GATEWAY_TOKEN:-}" ]; then
   echo "[entrypoint] ERROR: OPENCLAW_GATEWAY_TOKEN is required" >&2
