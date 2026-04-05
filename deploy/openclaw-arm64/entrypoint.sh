@@ -19,6 +19,8 @@ chmod 700 "$STATE_DIR" || true
 # Keep plugin installer default path (~/.openclaw) aligned with the persistent state dir.
 mkdir -p "$HOME"
 HOME_OPENCLAW="${HOME%/}/.openclaw"
+heal_self_referential_link "$HOME_OPENCLAW"
+
 if [ "$HOME_OPENCLAW" != "$STATE_DIR" ]; then
   rm -rf "$HOME_OPENCLAW" 2>/dev/null || true
   ln -s "$STATE_DIR" "$HOME_OPENCLAW"

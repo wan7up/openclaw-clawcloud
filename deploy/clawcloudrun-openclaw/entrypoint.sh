@@ -18,6 +18,11 @@ chmod 700 "$STATE_DIR" || true
 # Make plugin installers that write to ~/.openclaw land on the same persistent state dir.
 mkdir -p "$HOME"
 HOME_OPENCLAW="${HOME%/}/.openclaw"
+heal_self_referential_link "$HOME_OPENCLAW"
+
+mkdir -p "$STATE_DIR" "$WORKSPACE_DIR"
+chmod 700 "$STATE_DIR" || true
+
 if [ "$HOME_OPENCLAW" != "$STATE_DIR" ]; then
   rm -rf "$HOME_OPENCLAW" 2>/dev/null || true
   ln -s "$STATE_DIR" "$HOME_OPENCLAW"
