@@ -60,8 +60,11 @@ jobs:
           print(f"upstream_version={upstream}")
           print(f"clawcloud_repo=ghcr.io/{owner}/openclaw-clawcloud")
           print(f"arm64_repo=ghcr.io/{owner}/openclaw-arm64")
+          sha = '${{ github.sha }}'[:7]
           print(f"clawcloud_version_tag=v{upstream}")
+          print(f"clawcloud_unique_tag=v{upstream}-build-{sha}")
           print(f"arm64_version_tag={upstream}-manual-devices-v9")
+          print(f"arm64_unique_tag={upstream}-manual-devices-v9-build-{sha}")
           print("clawcloud_latest_tag=latest")
           print("arm64_latest_tag=latest-manual-devices-v9")
           PY
@@ -88,6 +91,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_version_tag }}
+            ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_unique_tag }}
             ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_latest_tag }}
 
       - name: Build and push task 004 / ARM64 package
@@ -99,12 +103,13 @@ jobs:
           platforms: linux/arm64
           tags: |
             ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_version_tag }}
+            ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_unique_tag }}
             ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_latest_tag }}
 
       - name: Rewrite ARM64 tags as linux/arm/v8-compatible manifests
         run: |
           set -euo pipefail
-          for tag in "${{ steps.state.outputs.arm64_version_tag }}" "${{ steps.state.outputs.arm64_latest_tag }}"; do
+          for tag in "${{ steps.state.outputs.arm64_version_tag }}" "${{ steps.state.outputs.arm64_unique_tag }}" "${{ steps.state.outputs.arm64_latest_tag }}"; do
             image="${{ steps.state.outputs.arm64_repo }}:${tag}"
             descriptor="/tmp/${tag//[^a-zA-Z0-9_.-]/_}-arm-v8.json"
             python3 scripts/make_arm_v8_descriptor.py --image "$image" --output "$descriptor"
@@ -114,6 +119,8 @@ jobs:
       - name: Show published refs
         run: |
           echo "ClawCloud package: ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_version_tag }}"
+          echo "ClawCloud unique:  ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_unique_tag }}"
           echo "ClawCloud latest:  ${{ steps.state.outputs.clawcloud_repo }}:${{ steps.state.outputs.clawcloud_latest_tag }}"
           echo "ARM64 package:     ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_version_tag }}"
+          echo "ARM64 unique:      ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_unique_tag }}"
           echo "ARM64 latest:      ${{ steps.state.outputs.arm64_repo }}:${{ steps.state.outputs.arm64_latest_tag }}"
