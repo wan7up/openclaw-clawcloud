@@ -13,7 +13,8 @@ COPY nginx.conf.template /app/clawcloudrun/nginx.conf.template
 
 RUN chmod +x /app/clawcloudrun/entrypoint.sh
 
-ENV OPENCLAW_STATE_DIR=/data/.openclaw \
+ENV HOME=/data \
+    OPENCLAW_STATE_DIR=/data/.openclaw \
     OPENCLAW_WORKSPACE_DIR=/data/workspace \
     OPENCLAW_GATEWAY_PORT=18789 \
     OPENCLAW_GATEWAY_BIND=loopback \
