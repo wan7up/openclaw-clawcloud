@@ -14,9 +14,23 @@ export OPENCLAW_GATEWAY_BIND="$GATEWAY_BIND"
 
 mkdir -p /data
 mkdir -p "$STATE_DIR" "$WORKSPACE_DIR"
-
-chown -R node:node /data "$STATE_DIR" "$WORKSPACE_DIR" || true
 chmod 700 "$STATE_DIR" || true
+
+# Keep plugin installer default path (~/.openclaw) aligned with the persistent state dir.
+mkdir -p "$HOME"
+HOME_OPENCLAW="${HOME%/}/.openclaw"
+if [ "$HOME_OPENCLAW" != "$STATE_DIR" ]; then
+  rm -rf "$HOME_OPENCLAW" 2>/dev/null || true
+  ln -s "$STATE_DIR" "$HOME_OPENCLAW"
+else
+  echo "[entrypoint] ~/.openclaw already points at state dir path; skip symlink"
+fi
+mkdir -p "$HOME/.npm"
+
+chown -R node:node /data "$STATE_DIR" "$WORKSPACE_DIR" "$HOME/.npm" || true
+if [ -L "$HOME_OPENCLAW" ]; then
+  chown -h node:node "$HOME_OPENCLAW" || true
+fi
 
 if [ ! -f "$STATE_DIR/openclaw.json" ]; then
   echo "[entrypoint] no existing config, generating initial config"
