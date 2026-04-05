@@ -11,14 +11,45 @@ export OPENCLAW_STATE_DIR="$STATE_DIR"
 export OPENCLAW_WORKSPACE_DIR="$WORKSPACE_DIR"
 export OPENCLAW_GATEWAY_PORT="$GATEWAY_PORT"
 
-mkdir -p /data "$STATE_DIR" "$WORKSPACE_DIR"
-mkdir -p "$STATE_DIR/agents/main/sessions" "$STATE_DIR/credentials"
-chmod 700 "$STATE_DIR" || true
+mkdir -p /data
+
+heal_self_referential_link() {
+  local path="$1"
+  if [ ! -L "$path" ]; then
+    return 0
+  fi
+
+  local target=""
+  target="$(readlink "$path" 2>/dev/null || true)"
+  if [ "$target" = "$path" ] || [ "$target" = "$(basename "$path")" ]; then
+    echo "[entrypoint] removing self-referential symlink: $path -> $target"
+    rm -f "$path"
+    return 0
+  fi
+
+  if ! readlink -f "$path" >/dev/null 2>&1; then
+    echo "[entrypoint] removing broken symlink: $path -> $target"
+    rm -f "$path"
+  fi
+}
+
+heal_self_referential_link "$STATE_DIR"
 
 # Make plugin installers that write to ~/.openclaw land on the same persistent state dir.
 mkdir -p "$HOME"
-rm -rf "$HOME/.openclaw" 2>/dev/null || true
-ln -s "$STATE_DIR" "$HOME/.openclaw"
+HOME_OPENCLAW="${HOME%/}/.openclaw"
+heal_self_referential_link "$HOME_OPENCLAW"
+
+mkdir -p "$STATE_DIR" "$WORKSPACE_DIR"
+mkdir -p "$STATE_DIR/agents/main/sessions" "$STATE_DIR/credentials"
+chmod 700 "$STATE_DIR" || true
+
+if [ "$HOME_OPENCLAW" != "$STATE_DIR" ]; then
+  rm -rf "$HOME_OPENCLAW" 2>/dev/null || true
+  ln -s "$STATE_DIR" "$HOME_OPENCLAW"
+else
+  echo "[entrypoint] ~/.openclaw already points at state dir path; skip symlink"
+fi
 mkdir -p "$HOME/.npm"
 
 if [ -z "${OPENCLAW_GATEWAY_TOKEN:-}" ]; then
