@@ -1,140 +1,161 @@
-# ARM64 适配版使用说明
+# OpenClaw ARM64 Docker image
 
-这个镜像是**基于 OpenClaw 官方镜像**修改的 ARM64 适配版本，适合 ARM64 机型直接用 Docker 部署。
+This directory is intentionally separate from `deploy/clawcloudrun-openclaw/`.
 
-当前推荐镜像：
+> Repo layout note: this project currently uses **one GitHub repository, two GHCR packages, two logical task lines**.
+>
+> - Task 001 / ClawCloud Run line → `ghcr.io/wan7up/openclaw-clawcloud`
+> - Task 004 / ARM64 line → `ghcr.io/wan7up/openclaw-arm64`
+>
+> Shared repo does **not** mean shared deployment target. This ARM64 line is for separate low-end / non-ClawCloud machines and must remain isolated in docs, tags, and operational reasoning.
 
-```text
-ghcr.io/wan7up/openclaw-arm64:2026.3.31-manual-devices-v9
+## Goal
+
+Build an **official-first, minimal-diff ARM64 package** on top of:
+
+```bash
+ghcr.io/openclaw/openclaw:2026.4.5
 ```
 
-滚动标签：
+The current rule for this line is:
+- start from the official upstream image
+- keep only the absolute minimum ARM64 / persistence compatibility changes
+- do **not** carry forward old custom startup semantics unless they are proven necessary
+- do **not** mix this line with ClawCloud Run-specific fixes
+- prefer deleting historical wrapper logic over stacking new patches onto it
 
-```text
-ghcr.io/wan7up/openclaw-arm64:latest-manual-devices-v9
+## Current image shape
+
+Current package design is intentionally thin:
+
+- base image: `ghcr.io/openclaw/openclaw:2026.4.5`
+- platform target: `linux/arm64`
+- retained overrides:
+  - `HOME=/data`
+  - `OPENCLAW_STATE_DIR=/data/.openclaw`
+  - `OPENCLAW_WORKSPACE_DIR=/data/workspace`
+  - `OPENCLAW_NO_RESPAWN=1`
+- no custom entrypoint
+- no custom configure script
+- no ARM64-specific config mutation layer
+
+Why keep these env vars:
+- `HOME=/data` keeps `~/.openclaw` and installer defaults aligned with the mounted persistent volume
+- `/data/.openclaw` + `/data/workspace` provide stable persistent layout across container recreation
+- `OPENCLAW_NO_RESPAWN=1` is the one retained mitigation from earlier ARM64 investigation, because the CLI respawn/bootstrap path was a real source of hangs on low-end ARM64 hosts
+
+## Files
+
+Primary files now are:
+
+- `Dockerfile` — minimal official-first ARM64 wrapper
+- `build.sh` — `docker buildx` helper for ARM64 builds
+- `run.sh` — example `docker run` launcher
+- `README.md` — current notes for this package line
+
+Historical files still present in this directory should be treated as **legacy investigation artifacts**, not the preferred runtime path:
+
+- old custom entrypoints
+- old configure scripts
+- slim experiment files
+- older manual-devices packaging notes
+
+Until they are cleaned out, do **not** assume they describe the current intended package behavior.
+
+## Recommended image naming
+
+Suggested naming for this line:
+
+```bash
+ghcr.io/wan7up/openclaw-arm64:<tag>
 ```
 
----
+Examples:
 
-## docker run 示例
+```bash
+ghcr.io/wan7up/openclaw-arm64:2026.4.5-official-min
+ghcr.io/wan7up/openclaw-arm64:latest-official-min
+```
 
-推荐写法：
+## Quick build
+
+Build and load a local ARM64 image:
+
+```bash
+cd deploy/openclaw-arm64
+./build.sh
+```
+
+Default behavior:
+- image name: `openclaw-arm64`
+- tag: `local`
+- dockerfile: `Dockerfile`
+- platform: `linux/arm64`
+- output mode: `--load`
+
+Equivalent resulting image ref:
+
+```bash
+openclaw-arm64:local
+```
+
+## Common build examples
+
+### 1) Local ARM64 build
+
+```bash
+cd deploy/openclaw-arm64
+IMAGE_NAME=openclaw-arm64 IMAGE_TAG=test ./build.sh
+```
+
+### 2) Build for GHCR naming
+
+```bash
+cd deploy/openclaw-arm64
+IMAGE_NAME=ghcr.io/wan7up/openclaw-arm64 IMAGE_TAG=2026.4.5-official-min ./build.sh
+```
+
+### 3) Push instead of load
+
+```bash
+cd deploy/openclaw-arm64
+IMAGE_NAME=ghcr.io/wan7up/openclaw-arm64 IMAGE_TAG=2026.4.5-official-min PUSH=1 LOAD=0 ./build.sh
+```
+
+## Minimal target-host run
 
 ```bash
 docker run -d \
   --name openclaw-arm64 \
   --restart unless-stopped \
   -p 18789:18789 \
-  --env-file /storage/openclaw/.env \
   -e HOME=/data \
-  -e OPENCLAW_GATEWAY_BIND=lan \
-  -e OPENCLAW_CONFIG_MODE=manual \
-  -e OPENCLAW_MANUAL_DEVICES=1 \
+  -e OPENCLAW_STATE_DIR=/data/.openclaw \
+  -e OPENCLAW_WORKSPACE_DIR=/data/workspace \
+  -e OPENCLAW_NO_RESPAWN=1 \
   -v /storage/openclaw:/data \
-  ghcr.io/wan7up/openclaw-arm64:2026.3.31-manual-devices-v9
+  ghcr.io/wan7up/openclaw-arm64:latest-official-min
 ```
 
-如果你想跟随滚动更新，也可以把镜像标签换成：
+If the host needs env injection, add `--env-file /storage/openclaw/.env`.
 
-```text
-ghcr.io/wan7up/openclaw-arm64:latest-manual-devices-v9
-```
+## Validation focus for the new line
 
-### `.env` 文件建议至少包含
+This new line should be judged against a simple acceptance bar:
 
-```env
-OPENCLAW_GATEWAY_TOKEN=replace-me
-OPENAI_API_KEY=replace-me
-```
+1. container starts from the official 2026.4.5 base on real ARM64 hardware
+2. state persists correctly under `/data`
+3. official plugin install flow remains usable
+4. existing user config is not silently clobbered during upgrade
+5. no extra custom startup/config logic is introduced unless real evidence forces it
 
-如果你使用 OpenAI-compatible / relay / proxy，还可以补：
+## Status
 
-```env
-OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
-OPENAI_MODEL=gpt-5.1-codex-mini
-```
-
----
-
-## docker compose 示例
-
-如果你的机器支持 `docker compose`，推荐这样写：
-
-```yaml
-services:
-  openclaw:
-    image: ghcr.io/wan7up/openclaw-arm64:2026.3.31-manual-devices-v9
-    container_name: openclaw-arm64
-    restart: unless-stopped
-    ports:
-      - "18789:18789"
-    env_file:
-      - /storage/openclaw/.env
-    environment:
-      HOME: /data
-      OPENCLAW_GATEWAY_BIND: lan
-      OPENCLAW_CONFIG_MODE: manual
-      OPENCLAW_MANUAL_DEVICES: "1"
-    volumes:
-      - /storage/openclaw:/data
-```
-
-启动：
-
-```bash
-docker compose up -d
-```
-
-查看日志：
-
-```bash
-docker logs -f openclaw-arm64
-```
-
----
-
-## 浏览器授权（pairing）流程
-
-### 第一步：先打开 WebUI
-浏览器访问你的 ARM64 机器地址，例如：
-
-```text
-http://你的机器IP:18789
-```
-
-首次进入时，通常需要先完成一次浏览器授权。
-
-### 第二步：查询 request id
-
-```bash
-cat /data/.openclaw/devices/pending.json
-```
-
-如果装了 `jq`，也可以直接提取：
-
-```bash
-jq -r 'keys[]' /data/.openclaw/devices/pending.json
-```
-
-### 第三步：执行授权命令
-把 `REQUEST_ID` 替换成你查到的值：
-
-```bash
-openclaw gateway call device.pair.approve --params '{"requestId":"REQUEST_ID"}'
-```
-
-### 第四步：确认是否成功
-
-```bash
-cat /data/.openclaw/devices/paired.json
-```
-
-如果 `paired.json` 已经有了对应记录，就说明浏览器授权成功。
-
----
-
-## 补充建议
-
-- 老一点的 ARM64 机器，优先保持部署简单，尽量单容器运行
-- 若机器没有 `docker compose`，直接用 `docker run` 就行
-- 数据目录建议直接挂到 `/storage/openclaw` 这类真实路径，不要写抽象占位路径后原样复制
+Current status after the reset decision:
+- old ARM64 package line is considered historically polluted and not suitable for more patch-stacking
+- `ghcr.io/openclaw/openclaw:2026.4.2` is the only upstream base for the rebuild
+- this directory has been reset toward an official-first minimal wrapper
+- next required step is real build + runtime validation on ARM64, especially around persistence and official plugin install behavior
+or
+or
+or

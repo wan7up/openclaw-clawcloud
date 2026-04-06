@@ -13,15 +13,16 @@ TARGETS = {
     'clawcloud': {
         'dockerfile': WORKSPACE / 'deploy' / 'clawcloudrun-openclaw' / 'Dockerfile',
         'image_repo': 'ghcr.io/wan7up/openclaw-clawcloud',
-        'baseline_tag': 'v0.1.12',
-        'tag_style': 'carry-forward',
+        'baseline_tag': 'v2026.4.2-pluginfix-20260406-2',
+        'tag_style': 'rebuild-from-validated-template',
+        'template_base_version': '2026.4.2',
     },
     'arm64': {
         'dockerfile': WORKSPACE / 'deploy' / 'openclaw-arm64' / 'Dockerfile',
         'dockerfile_slim': WORKSPACE / 'deploy' / 'openclaw-arm64' / 'Dockerfile.slim',
         'image_repo': 'ghcr.io/wan7up/openclaw-arm64',
-        'baseline_tag': '2026.3.24-manual-devices-v8',
-        'tag_style': 'upstream-manual-devices-v8',
+        'baseline_tag': '2026.4.2-official-min-rc1',
+        'tag_style': 'upstream-official-min',
     },
 }
 
@@ -62,21 +63,21 @@ def replace_line(path: Path, pattern: str, repl: str):
     path.write_text(new_text)
 
 
-def sync_files(upstream_version: str):
+def sync_files(clawcloud_version: str, arm64_version: str):
     replace_line(
         TARGETS['clawcloud']['dockerfile'],
         r'^ARG BASE_IMAGE=.*$',
-        f'ARG BASE_IMAGE=ghcr.io/openclaw/openclaw:{upstream_version}',
+        f'ARG BASE_IMAGE=ghcr.io/openclaw/openclaw:{clawcloud_version}',
     )
     replace_line(
         TARGETS['arm64']['dockerfile'],
         r'^ARG OPENCLAW_VERSION=.*$',
-        f'ARG OPENCLAW_VERSION={upstream_version}',
+        f'ARG OPENCLAW_VERSION={arm64_version}',
     )
     replace_line(
         TARGETS['arm64']['dockerfile_slim'],
         r'^ARG OPENCLAW_VERSION=.*$',
-        f'ARG OPENCLAW_VERSION={upstream_version}',
+        f'ARG OPENCLAW_VERSION={arm64_version}',
     )
 
 
@@ -97,6 +98,8 @@ def main():
 
     state = load_state()
     current = state.get('upstream_version')
+    clawcloud_version = release['upstream_version']
+    arm64_version = release['upstream_version']
     changed = current != release['upstream_version']
 
     result = {
@@ -108,11 +111,12 @@ def main():
         'targets': {
             'clawcloud': {
                 'baseline_tag': TARGETS['clawcloud']['baseline_tag'],
-                'next_image_tag_suggestion': f"v{release['upstream_version']}",
+                'template_base_version': TARGETS['clawcloud']['template_base_version'],
+                'next_image_tag_suggestion': f"v{clawcloud_version}",
             },
             'arm64': {
                 'baseline_tag': TARGETS['arm64']['baseline_tag'],
-                'next_image_tag_suggestion': f"{release['upstream_version']}-manual-devices-v9",
+                'next_image_tag_suggestion': f"{arm64_version}-official-min",
             },
         },
     }
@@ -121,13 +125,13 @@ def main():
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return
 
-    sync_files(release['upstream_version'])
+    sync_files(clawcloud_version, arm64_version)
     state.update(release)
     state['targets'] = {
         name: {
-            'image_repo': cfg['image_repo'],
-            'baseline_tag': cfg['baseline_tag'],
-            'tag_style': cfg['tag_style'],
+            key: value
+            for key, value in cfg.items()
+            if key in {'image_repo', 'baseline_tag', 'tag_style', 'template_base_version'}
         }
         for name, cfg in TARGETS.items()
     }

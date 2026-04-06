@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/openclaw/openclaw:2026.4.2
+ARG BASE_IMAGE=ghcr.io/openclaw/openclaw:2026.4.5
 FROM ${BASE_IMAGE}
 
 USER root
@@ -18,6 +18,7 @@ ENV HOME=/data \
     OPENCLAW_WORKSPACE_DIR=/data/workspace \
     OPENCLAW_GATEWAY_PORT=18789 \
     OPENCLAW_GATEWAY_BIND=loopback \
+    OPENCLAW_NO_RESPAWN=1 \
     PORT=8080
 
 EXPOSE 8080

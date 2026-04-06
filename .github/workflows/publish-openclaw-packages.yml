@@ -60,10 +60,13 @@ jobs:
           print(f"upstream_version={upstream}")
           print(f"clawcloud_repo=ghcr.io/{owner}/openclaw-clawcloud")
           print(f"arm64_repo=ghcr.io/{owner}/openclaw-arm64")
-          print(f"clawcloud_version_tag=v{upstream}")
-          print(f"arm64_version_tag={upstream}-manual-devices-v9")
-          print("clawcloud_latest_tag=latest")
-          print("arm64_latest_tag=latest-manual-devices-v9")
+          clawcloud = data['targets']['clawcloud']
+          clawcloud_version_tag = clawcloud.get('publish_tag', f'v{upstream}-from-openclaw-{upstream}')
+          clawcloud_latest_tag = clawcloud.get('latest_tag', f'latest-from-openclaw-{upstream}')
+          print(f"clawcloud_version_tag={clawcloud_version_tag}")
+          print(f"arm64_version_tag={upstream}-official-min")
+          print(f"clawcloud_latest_tag={clawcloud_latest_tag}")
+          print("arm64_latest_tag=latest-official-min")
           PY
 
       - name: Set up QEMU
