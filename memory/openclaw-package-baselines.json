@@ -5,10 +5,10 @@
       "baseline_tag": "v2026.4.2-pluginfix-20260406-2",
       "tag_style": "rebuild-from-validated-template",
       "template_base_version": "2026.4.2",
-      "publish_tag": "v2026.4.5",
-      "latest_tag": "latest",
-      "published_commit": null,
-      "published_at_note": null
+      "publish_tag": "v2026.4.5-restore1",
+      "latest_tag": "latest-2026.4.5-restore1",
+      "published_commit": "18fe827",
+      "published_at_note": "2026-04-07 verified-good task001 line: 4.5 candidate built from restore1 healing logic"
     },
     "arm64": {
       "image_repo": "ghcr.io/wan7up/openclaw-arm64",
