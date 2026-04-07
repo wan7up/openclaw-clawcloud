@@ -102,6 +102,10 @@ def main():
     arm64_version = release['upstream_version']
     changed = current != release['upstream_version']
 
+    current_clawcloud = state.get('targets', {}).get('clawcloud', {})
+    preserved_publish_tag = current_clawcloud.get('publish_tag', f"v{clawcloud_version}")
+    preserved_latest_tag = current_clawcloud.get('latest_tag', 'latest')
+
     result = {
         'changed': changed,
         'from_version': current,
@@ -112,7 +116,8 @@ def main():
             'clawcloud': {
                 'baseline_tag': TARGETS['clawcloud']['baseline_tag'],
                 'template_base_version': TARGETS['clawcloud']['template_base_version'],
-                'next_image_tag_suggestion': f"v{clawcloud_version}",
+                'next_image_tag_suggestion': preserved_publish_tag,
+                'latest_tag': preserved_latest_tag,
             },
             'arm64': {
                 'baseline_tag': TARGETS['arm64']['baseline_tag'],
@@ -128,12 +133,21 @@ def main():
     sync_files(clawcloud_version, arm64_version)
     state.update(release)
     state['targets'] = {
-        name: {
-            key: value
-            for key, value in cfg.items()
-            if key in {'image_repo', 'baseline_tag', 'tag_style', 'template_base_version'}
-        }
-        for name, cfg in TARGETS.items()
+        'clawcloud': {
+            'image_repo': TARGETS['clawcloud']['image_repo'],
+            'baseline_tag': TARGETS['clawcloud']['baseline_tag'],
+            'tag_style': TARGETS['clawcloud']['tag_style'],
+            'template_base_version': TARGETS['clawcloud']['template_base_version'],
+            'publish_tag': preserved_publish_tag,
+            'latest_tag': preserved_latest_tag,
+            'published_commit': current_clawcloud.get('published_commit'),
+            'published_at_note': current_clawcloud.get('published_at_note'),
+        },
+        'arm64': {
+            'image_repo': TARGETS['arm64']['image_repo'],
+            'baseline_tag': TARGETS['arm64']['baseline_tag'],
+            'tag_style': TARGETS['arm64']['tag_style'],
+        },
     }
     save_state(state)
     print(json.dumps(result, ensure_ascii=False, indent=2))
