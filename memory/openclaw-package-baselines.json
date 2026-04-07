@@ -4,7 +4,11 @@
       "image_repo": "ghcr.io/wan7up/openclaw-clawcloud",
       "baseline_tag": "v2026.4.2-pluginfix-20260406-2",
       "tag_style": "rebuild-from-validated-template",
-      "template_base_version": "2026.4.2"
+      "template_base_version": "2026.4.2",
+      "publish_tag": "v2026.4.5-from-openclaw-2026.4.5-pluginfix2",
+      "latest_tag": "latest-from-openclaw-2026.4.5-pluginfix2",
+      "published_commit": "a7ee317",
+      "published_at_note": "2026-04-07 candidate tags observed in GHCR; awaiting real validation"
     },
     "arm64": {
       "image_repo": "ghcr.io/wan7up/openclaw-arm64",

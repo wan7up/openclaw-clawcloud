@@ -17,8 +17,13 @@ chmod 700 "$STATE_DIR" || true
 
 # Make plugin installers that write to ~/.openclaw land on the same persistent state dir.
 mkdir -p "$HOME"
-rm -rf "$HOME/.openclaw" 2>/dev/null || true
-ln -s "$STATE_DIR" "$HOME/.openclaw"
+HOME_OPENCLAW="${HOME%/}/.openclaw"
+if [ "$HOME_OPENCLAW" != "$STATE_DIR" ]; then
+  rm -rf "$HOME_OPENCLAW" 2>/dev/null || true
+  ln -s "$STATE_DIR" "$HOME_OPENCLAW"
+else
+  echo "[entrypoint] ~/.openclaw already points at state dir path; skip symlink"
+fi
 mkdir -p "$HOME/.npm"
 
 if [ -z "${OPENCLAW_GATEWAY_TOKEN:-}" ]; then
