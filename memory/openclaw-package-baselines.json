@@ -5,10 +5,10 @@
       "baseline_tag": "v2026.4.2-pluginfix-20260406-2",
       "tag_style": "rebuild-from-validated-template",
       "template_base_version": "2026.4.2",
-      "publish_tag": "v2026.4.2-pluginfix-restore2",
-      "latest_tag": "latest-2026.4.2-pluginfix-restore2",
-      "published_commit": "92fc1af",
-      "published_at_note": "2026-04-07 restore2 republish after GHCR child-manifest cleanup mistake"
+      "publish_tag": "v2026.4.5-restore2",
+      "latest_tag": "latest-2026.4.5-restore2",
+      "published_commit": "d3b030a",
+      "published_at_note": "2026-04-07 verified-good task001 line after GHCR cleanup fix: 4.5 restore2"
     },
     "arm64": {
       "image_repo": "ghcr.io/wan7up/openclaw-arm64",
