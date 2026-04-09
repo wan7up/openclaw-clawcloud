@@ -17,9 +17,9 @@
     }
   },
   "repo": "openclaw/openclaw",
-  "release_tag": "v2026.4.8",
-  "upstream_version": "2026.4.8",
-  "published_at": "2026-04-08T05:59:44Z",
-  "release_name": "openclaw 2026.4.8",
-  "html_url": "https://github.com/openclaw/openclaw/releases/tag/v2026.4.8"
+  "release_tag": "v2026.4.9",
+  "upstream_version": "2026.4.9",
+  "published_at": "2026-04-09T02:25:28Z",
+  "release_name": "openclaw 2026.4.9",
+  "html_url": "https://github.com/openclaw/openclaw/releases/tag/v2026.4.9"
 }
