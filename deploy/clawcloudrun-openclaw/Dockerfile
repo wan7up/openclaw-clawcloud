@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/openclaw/openclaw:2026.4.20
+ARG BASE_IMAGE=ghcr.io/openclaw/openclaw:2026.4.21
 FROM ${BASE_IMAGE}
 
 USER root
